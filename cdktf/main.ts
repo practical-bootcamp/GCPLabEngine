@@ -12,6 +12,8 @@ class GcpLabEngineStack extends TerraformStack {
     const projectId = "gcplabengine";
     new GoogleProvider(this, "google", {
       project: projectId,
+      billingProject: projectId,
+      userProjectOverride: true,
     });
 
     const cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function");

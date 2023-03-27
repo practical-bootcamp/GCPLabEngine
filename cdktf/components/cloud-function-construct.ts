@@ -5,7 +5,13 @@ import { RandomProvider } from "./../.gen/providers/random/provider";
 import { StorageBucket } from "./../.gen/providers/google/storage-bucket";
 import { StorageBucketObject } from "./../.gen/providers/google/storage-bucket-object";
 import { ProjectService } from "./../.gen/providers/google/project-service/index";
+import { ServiceAccount } from "./../.gen/providers/google/service-account";
+import { ProjectIamBinding } from "./../.gen/providers/google/project-iam-binding";
+
 import { Cloudfunctions2Function } from "../.gen/providers/google/cloudfunctions2-function";
+import { ApikeysKey } from "../.gen/providers/google/apikeys-key";
+
+
 import { ArchiveProvider } from "../.gen/providers/archive/provider";
 import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
 import path = require("path");
@@ -59,6 +65,8 @@ export class CloudFunctionConstruct extends Construct {
         });
 
         const apis = [
+            "cloudresourcemanager.googleapis.com",
+            "apikeys.googleapis.com",
             "run.googleapis.com",
             "artifactregistry.googleapis.com",
             "cloudfunctions.googleapis.com",
@@ -74,6 +82,27 @@ export class CloudFunctionConstruct extends Construct {
                 disableOnDestroy: false,
             }));
         }
+
+        const serviceAccount = new ServiceAccount(this, "service-account", {
+            accountId: "google-calendar-poller",
+            project: props.projectId,
+        });
+        new ProjectIamBinding(this, "service-account-binding", {
+            project: props.projectId,
+            role: "roles/pubsub.publisher",
+            members: ["serviceAccount:" + serviceAccount.email],
+
+        });
+
+        const apikeysKey = new ApikeysKey(this, "api-key", {
+            name: "google-calendar-api-key",
+            displayName: "Google Calendar API Key",
+            project: props.projectId,
+            restrictions: {
+                apiTargets: [{ service: "calendar-json.googleapis.com" }]
+            }
+            , dependsOn: services
+        });
 
         const cloudFunction = new Cloudfunctions2Function(this, "cloud-function", {
             name: "google-calendar-poller",
@@ -93,6 +122,10 @@ export class CloudFunctionConstruct extends Construct {
                 maxInstanceCount: 1,
                 availableMemory: "128Mi",
                 timeoutSeconds: 60,
+                serviceAccountEmail: serviceAccount.email,
+                environmentVariables: {
+                    "GOOGLE_CALENDAR_API_KEY": apikeysKey.keyString,
+                }
             }
             , dependsOn: services
         });
