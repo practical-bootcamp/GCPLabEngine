@@ -12,7 +12,9 @@
   "customizations": {
     "vscode": {     
       "extensions": [
-        "github.copilot"
+        "github.copilot",
+        "ms-vscode.vscode-typescript-next",
+        "googlecloudtools.cloudcode"
       ]
     }
   }

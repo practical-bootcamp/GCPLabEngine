@@ -9,7 +9,7 @@ import { ServiceAccount } from "./../.gen/providers/google/service-account";
 import { ProjectIamBinding } from "./../.gen/providers/google/project-iam-binding";
 
 import { Cloudfunctions2Function } from "../.gen/providers/google/cloudfunctions2-function";
-import { ApikeysKey } from "../.gen/providers/google/apikeys-key";
+// import { ApikeysKey } from "../.gen/providers/google/apikeys-key";
 
 
 import { ArchiveProvider } from "../.gen/providers/archive/provider";
@@ -50,10 +50,10 @@ export class CloudFunctionConstruct extends Construct {
             folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
             files: { include: ['*.js', '*.json'] },
         };
-        const hash = await hashElement(path.resolve(__dirname, "function", "google-calendar-poller"), options);
+        const hash = await hashElement(path.resolve(__dirname, "..", "..", "functions", "google-calendar-poller"), options);
         const code = new DataArchiveFile(this, "archiveFile", {
             type: "zip",
-            sourceDir: path.resolve(__dirname, "function", "google-calendar-poller"),
+            sourceDir: path.resolve(__dirname, "..", "..", "functions", "google-calendar-poller"),
             outputPath: path.resolve(__dirname, "..", "cdktf.out", `function-source-${hash}.zip`)
         })
 
@@ -65,6 +65,7 @@ export class CloudFunctionConstruct extends Construct {
         });
 
         const apis = [
+            "iam.googleapis.com",
             "cloudresourcemanager.googleapis.com",
             "apikeys.googleapis.com",
             "run.googleapis.com",
@@ -86,22 +87,13 @@ export class CloudFunctionConstruct extends Construct {
         const serviceAccount = new ServiceAccount(this, "service-account", {
             accountId: "google-calendar-poller",
             project: props.projectId,
+            displayName: "Google Calendar Poller Service Account",
+            dependsOn: services
         });
         new ProjectIamBinding(this, "service-account-binding", {
             project: props.projectId,
             role: "roles/pubsub.publisher",
             members: ["serviceAccount:" + serviceAccount.email],
-
-        });
-
-        const apikeysKey = new ApikeysKey(this, "api-key", {
-            name: "google-calendar-api-key",
-            displayName: "Google Calendar API Key",
-            project: props.projectId,
-            restrictions: {
-                apiTargets: [{ service: "calendar-json.googleapis.com" }]
-            }
-            , dependsOn: services
         });
 
         const cloudFunction = new Cloudfunctions2Function(this, "cloud-function", {
@@ -110,7 +102,7 @@ export class CloudFunctionConstruct extends Construct {
             location: "us-central1",
             buildConfig: {
                 runtime: "nodejs18",
-                entryPoint: "helloHttp",
+                entryPoint: "helloGET",
                 source: {
                     storageSource: {
                         bucket: sourceBucket.name,
@@ -123,9 +115,9 @@ export class CloudFunctionConstruct extends Construct {
                 availableMemory: "128Mi",
                 timeoutSeconds: 60,
                 serviceAccountEmail: serviceAccount.email,
-                environmentVariables: {
-                    "GOOGLE_CALENDAR_API_KEY": apikeysKey.keyString,
-                }
+                // environmentVariables: {
+                //     "GOOGLE_CALENDAR_API_KEY": apikeysKey.keyString,
+                // }
             }
             , dependsOn: services
         });
