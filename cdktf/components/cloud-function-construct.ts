@@ -44,6 +44,14 @@ export class CloudFunctionConstruct extends Construct {
             location: "US",
             forceDestroy: true,
             uniformBucketLevelAccess: true,
+            lifecycleRule: [{
+                action: {
+                    type: "Delete"
+                },
+                condition: {
+                    age: 1
+                }
+            }]
         });
 
         const options = {
@@ -51,15 +59,15 @@ export class CloudFunctionConstruct extends Construct {
             files: { include: ['*.js', '*.json'] },
         };
         const hash = await hashElement(path.resolve(__dirname, "..", "..", "functions", "google-calendar-poller"), options);
+        const outputFileName = `function-source-${hash.hash}.zip`;
         const code = new DataArchiveFile(this, "archiveFile", {
             type: "zip",
             sourceDir: path.resolve(__dirname, "..", "..", "functions", "google-calendar-poller"),
-            outputPath: path.resolve(__dirname, "..", "cdktf.out", `function-source-${hash}.zip`)
-        })
-
+            outputPath: path.resolve(__dirname, "..", "cdktf.out", outputFileName)
+        });
 
         const storageBucketObject = new StorageBucketObject(this, "storage-bucket-object", {
-            name: "function-source.zip",
+            name: outputFileName,
             bucket: sourceBucket.name,
             source: code.outputPath,
         });
@@ -115,9 +123,9 @@ export class CloudFunctionConstruct extends Construct {
                 availableMemory: "128Mi",
                 timeoutSeconds: 60,
                 serviceAccountEmail: serviceAccount.email,
-                // environmentVariables: {
-                //     "GOOGLE_CALENDAR_API_KEY": apikeysKey.keyString,
-                // }
+                environmentVariables: {
+                    "ICALURL": process.env.ICALURL!,
+                }
             }
             , dependsOn: services
         });

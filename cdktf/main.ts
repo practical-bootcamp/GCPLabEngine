@@ -2,6 +2,8 @@ import { Construct } from "constructs";
 import { App, TerraformStack } from "cdktf";
 import { GoogleProvider } from "./.gen/providers/google/provider/index";
 import { CloudFunctionConstruct } from "./components/cloud-function-construct";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 class GcpLabEngineStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
