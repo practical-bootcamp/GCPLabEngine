@@ -3,6 +3,7 @@ import { App, TerraformStack } from "cdktf";
 import { GoogleProvider } from "./.gen/providers/google/provider/index";
 import { CloudFunctionConstruct } from "./components/cloud-function-construct";
 import * as dotenv from 'dotenv';
+import { CloudFunctionDeploymentConstruct } from "./components/cloud-function-deployment-construct";
 dotenv.config();
 
 class GcpLabEngineStack extends TerraformStack {
@@ -15,12 +16,20 @@ class GcpLabEngineStack extends TerraformStack {
     new GoogleProvider(this, "google", {
       project: projectId,
       billingProject: projectId,
-      userProjectOverride: true,      
+      userProjectOverride: true,
     });
 
+    const cloudFunctionDeploymentConstruct = new CloudFunctionDeploymentConstruct(this, "cloud-function-deployment", {
+      projectId: projectId,
+    });
     const cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function");
     await cloudFunctionConstruct.build({
-      projectId: projectId,
+      functionName: "google-calendar-poller",
+      entryPoint: "helloGET",
+      environmentVariables: {
+        "ICALURL": process.env.ICALURL!,
+      },
+      cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
     });
   }
 }
