@@ -2,6 +2,10 @@ import { Construct } from "constructs";
 import { App, TerraformStack } from "cdktf";
 import { GoogleProvider } from "./.gen/providers/google/provider/index";
 import { CloudFunctionConstruct } from "./components/cloud-function-construct";
+import * as dotenv from 'dotenv';
+import { CloudFunctionDeploymentConstruct } from "./components/cloud-function-deployment-construct";
+import { CloudSchedulerConstruct } from "./components/cloud-scheduler-construct";
+dotenv.config();
 
 class GcpLabEngineStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
@@ -16,10 +20,25 @@ class GcpLabEngineStack extends TerraformStack {
       userProjectOverride: true,
     });
 
-    const cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function");
-    await cloudFunctionConstruct.build({
+    const cloudFunctionDeploymentConstruct = new CloudFunctionDeploymentConstruct(this, "cloud-function-deployment", {
       projectId: projectId,
     });
+    const cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function");
+    await cloudFunctionConstruct.build({
+      functionName: "google-calendar-poller",
+      entryPoint: "http_handler",
+      environmentVariables: {
+        "ICALURL": process.env.ICALURL!,
+      },
+      cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
+    });
+
+    new CloudSchedulerConstruct(this, "cloud-scheduler", {
+      name: "google-calendar-poller-scheduler",
+      cronExpression: "*/15 * * * *",
+      cloudFunctionConstruct: cloudFunctionConstruct,
+    });
+
   }
 }
 
