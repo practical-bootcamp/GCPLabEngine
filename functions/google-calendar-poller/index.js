@@ -108,12 +108,11 @@ function getComingRecurrences(icalUrl) {
 
 const icalUrl = process.env.ICALURL;
 
-functions.http('helloGET', async (req, res) => {
-
+functions.http('http_handler', async (req, res) => {
   const comingRecurrences = await getComingRecurrences(icalUrl);
   const ComingEvents = await getComingEvents(icalUrl);
-
   const events = [...ComingEvents, ...comingRecurrences];
+  console.log(events);
   res.send(events);
 });
 

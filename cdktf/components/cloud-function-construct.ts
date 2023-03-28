@@ -1,15 +1,13 @@
 import { Construct } from "constructs";
 import { StorageBucketObject } from "./../.gen/providers/google/storage-bucket-object";
 import { ServiceAccount } from "./../.gen/providers/google/service-account";
-import { ProjectIamBinding } from "./../.gen/providers/google/project-iam-binding";
 import { Cloudfunctions2Function } from "../.gen/providers/google/cloudfunctions2-function";
-
-
+import { Cloudfunctions2FunctionIamBinding } from "./../.gen/providers/google/cloudfunctions2-function-iam-binding";
+import { CloudRunServiceIamBinding } from "./../.gen/providers/google/cloud-run-service-iam-binding";
 import { ArchiveProvider } from "../.gen/providers/archive/provider";
 import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
 import path = require("path");
 import { hashElement } from 'folder-hash';
-import { TerraformOutput } from "cdktf";
 import { CloudFunctionDeploymentConstruct } from "./cloud-function-deployment-construct";
 
 export interface CloudFunctionConstructProps {
@@ -21,9 +19,10 @@ export interface CloudFunctionConstructProps {
 
 export class CloudFunctionConstruct extends Construct {
     public cloudFunction?: Cloudfunctions2Function;
+    public serviceAccount?: ServiceAccount;
 
     constructor(scope: Construct, id: string) {
-        super(scope, id);        
+        super(scope, id);
     }
 
     public async build(props: CloudFunctionConstructProps) {
@@ -46,19 +45,14 @@ export class CloudFunctionConstruct extends Construct {
             source: code.outputPath,
         });
 
-        const serviceAccount = new ServiceAccount(this, "service-account", {
-            accountId: "google-calendar-poller",
+        this.serviceAccount = new ServiceAccount(this, "service-account", {
+            accountId: props.functionName,
             project: props.cloudFunctionDeploymentConstruct.projectId,
-            displayName: "Google Calendar Poller Service Account",
-        });
-        new ProjectIamBinding(this, "service-account-binding", {
-            project: props.cloudFunctionDeploymentConstruct.projectId,
-            role: "roles/pubsub.publisher",
-            members: ["serviceAccount:" + serviceAccount.email],
+            displayName: props.functionName,
         });
 
         this.cloudFunction = new Cloudfunctions2Function(this, "cloud-function", {
-            name: props.functionName,           
+            name: props.functionName,
             location: "us-central1",
             buildConfig: {
                 runtime: "nodejs18",
@@ -74,12 +68,24 @@ export class CloudFunctionConstruct extends Construct {
                 maxInstanceCount: 1,
                 availableMemory: "128Mi",
                 timeoutSeconds: 60,
-                serviceAccountEmail: serviceAccount.email,
+                serviceAccountEmail: this.serviceAccount.email,
                 environmentVariables: props.environmentVariables
-            }
+            },
         });
-        new TerraformOutput(this, "cloud-function-url", {
-            value: this.cloudFunction.serviceConfig.uri
-        })
+        new Cloudfunctions2FunctionIamBinding(this, "cloudfunctions2-function-iam-member", {
+            project: this.cloudFunction.project,
+            location: this.cloudFunction.location,
+            cloudFunction: this.cloudFunction.name,
+            role: "roles/cloudfunctions.invoker",
+            members: ["serviceAccount:" + this.serviceAccount.email]
+        });
+
+        new CloudRunServiceIamBinding(this, "cloud-run-service-iam-binding", {
+            project: props.cloudFunctionDeploymentConstruct.projectId,
+            location: this.cloudFunction.location,
+            service: this.cloudFunction.name,
+            role: "roles/run.invoker",
+            members: ["serviceAccount:" + this.serviceAccount.email]
+        });
     }
 }

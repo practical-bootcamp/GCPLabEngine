@@ -4,6 +4,7 @@ import { GoogleProvider } from "./.gen/providers/google/provider/index";
 import { CloudFunctionConstruct } from "./components/cloud-function-construct";
 import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./components/cloud-function-deployment-construct";
+import { CloudSchedulerConstruct } from "./components/cloud-scheduler-construct";
 dotenv.config();
 
 class GcpLabEngineStack extends TerraformStack {
@@ -25,12 +26,19 @@ class GcpLabEngineStack extends TerraformStack {
     const cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function");
     await cloudFunctionConstruct.build({
       functionName: "google-calendar-poller",
-      entryPoint: "helloGET",
+      entryPoint: "http_handler",
       environmentVariables: {
         "ICALURL": process.env.ICALURL!,
       },
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
     });
+
+    new CloudSchedulerConstruct(this, "cloud-scheduler", {
+      name: "google-calendar-poller-scheduler",
+      cronExpression: "*/15 * * * *",
+      cloudFunctionConstruct: cloudFunctionConstruct,
+    });
+
   }
 }
 
