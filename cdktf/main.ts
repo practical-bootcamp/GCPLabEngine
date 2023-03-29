@@ -4,13 +4,10 @@ import { GoogleProvider } from "./.gen/providers/google/provider/index";
 import { Project } from "./.gen/providers/google/project";
 import { DataGoogleBillingAccount } from "./.gen/providers/google/data-google-billing-account";
 import { AppEngineApplication } from "./.gen/providers/google/app-engine-application";
-
-
-import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
 import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
-import { CloudSchedulerConstruct } from "./constructs/cloud-scheduler-construct";
-import { DataStoreConstruct } from "./constructs/datastore-construct";
+
+import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
 // import { ProjectService } from "./.gen/providers/google/project-service";
 dotenv.config();
 
@@ -48,37 +45,11 @@ class GcpLabEngineStack extends TerraformStack {
       projectId: project.projectId,
       region: process.env.REGION!,
     });
-    const cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function", {
-      functionName: "google-calendar-poller",
-      entryPoint: "http_handler",
+    
+    new CalendarTriggerPattern(this, "calendar-trigger", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
-    });
-
-    const calendarDataStore = new DataStoreConstruct(this, "calendar-event-data-store", {
-      cloudFunctionConstruct: cloudFunctionConstruct,
-      kind: "calendar-event",
-      properties: [
-        {
-          name: "start",
-          direction: "ASCENDING",
-        },
-        {
-          name: "end",
-          direction: "ASCENDING",
-        }
-      ],
-      appEngineApplication: dummyAppEngineApplication,
-    });
-
-    await cloudFunctionConstruct.createCloudFunction({
-      "ICALURL": process.env.ICALURL!,
-      "calendarDataStore": calendarDataStore.datastoreIndex.id,
-    });
-
-    new CloudSchedulerConstruct(this, "cloud-scheduler", {
-      name: "google-calendar-poller-scheduler",
-      cronExpression: "*/15 * * * *",
-      cloudFunctionConstruct: cloudFunctionConstruct,
+      suffix: "",
+      dummyAppEngineApplication: dummyAppEngineApplication,
     });
 
   }
