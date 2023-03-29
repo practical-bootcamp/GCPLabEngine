@@ -4,9 +4,10 @@ import { DataStoreConstruct } from "../constructs/datastore-construct";
 import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
 import { AppEngineApplication } from "../.gen/providers/google/app-engine-application";
 import { CloudSchedulerConstruct } from "../constructs/cloud-scheduler-construct";
+import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
 
 export interface CalendarTriggerPatternProps {
-    cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;    
+    cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
     suffix: string;
     cronExpression?: string;
     dummyAppEngineApplication: AppEngineApplication;
@@ -40,6 +41,12 @@ export class CalendarTriggerPattern extends Construct {
             ],
             appEngineApplication: props.dummyAppEngineApplication,
         });
+
+        new ProjectIamMember(this, "ProjectIamMember", {
+            project: this.cloudFunctionConstruct.project,
+            role: "roles/datastore.user",
+            member: "serviceAccount:" + this.cloudFunctionConstruct.serviceAccount.email,
+        });
         this.props = props;
     }
 
@@ -47,11 +54,13 @@ export class CalendarTriggerPattern extends Construct {
         await this.cloudFunctionConstruct.createCloudFunction({
             "ICALURL": process.env.ICALURL!,
             "calendarDataStore": this.calendarDataStore.datastoreIndex.id,
+            "SUFFIX": this.props.suffix,
         });
         new CloudSchedulerConstruct(this, "cloud-scheduler", {
             name: "google-calendar-poller-scheduler" + this.props.suffix,
             cronExpression: this.props.cronExpression ?? "*/15 * * * *",
             cloudFunctionConstruct: this.cloudFunctionConstruct,
         });
+
     }
 }

@@ -2,12 +2,15 @@ const functions = require('@google-cloud/functions-framework');
 const { getEvents } = require('./calendar');
 const { getEvent, saveEvent } = require('./datastore');
 
-const icalUrl = process.env.ICALURL ?? "https://calendar.google.com/calendar/ical/spe8ehlqjkv8hd7mdjs3d2g80c%40group.calendar.google.com/public/basic.ics";
+const icalUrl = process.env.ICALURL;
 
 functions.http('http_handler', async (req, res) => {
   const events = await getEvents(icalUrl);  
+  console.log(events);
   for (const event of events) {
+    console.log("getEvent");
     const savedEvent = await getEvent(event);
+    console.log("done getEvent");
     if (savedEvent) continue;
     await saveEvent(event);
   }
@@ -15,13 +18,13 @@ functions.http('http_handler', async (req, res) => {
 });
 
 
-(async () => {
-  const events = await getEvents(icalUrl);
-  console.log(events);
-  for (const event of events) {
-    const savedEvent = await getEvent(event);
-    if (savedEvent) continue;
-    await saveEvent(event);
-  }
-})();
+// (async () => {
+//   const events = await getEvents(icalUrl);
+//   console.log(events);
+//   for (const event of events) {
+//     const savedEvent = await getEvent(event);
+//     if (savedEvent) continue;
+//     await saveEvent(event);
+//   }
+// })();
 

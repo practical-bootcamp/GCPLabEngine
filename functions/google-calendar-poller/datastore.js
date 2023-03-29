@@ -6,8 +6,10 @@ const datastore = new Datastore(
     }
 );
 
+const suffix = process.env.SUFFIX || '';
+
 async function getEvent(event) {
-    const kind = 'calendar-event';
+    const kind = 'calendar-event' + suffix;
     const name = event.summary + "-" + event.start + "-" + event.end;
     const key = datastore.key([kind, name]);
     const [task] = await datastore.get(key);
@@ -16,7 +18,7 @@ async function getEvent(event) {
 
 async function saveEvent(event) {
     // The kind for the new entity
-    const kind = 'calendar-event';
+    const kind = 'calendar-event' + suffix;
     // The name/ID for the new entity
     const name = event.summary + "-" + event.start + "-" + event.end;
     // The Cloud Datastore key for the new entity

@@ -45,12 +45,13 @@ class GcpLabEngineStack extends TerraformStack {
       projectId: project.projectId,
       region: process.env.REGION!,
     });
-    
-    new CalendarTriggerPattern(this, "calendar-trigger", {
+
+    const calendarTriggerPattern = new CalendarTriggerPattern(this, "calendar-trigger", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       suffix: "",
       dummyAppEngineApplication: dummyAppEngineApplication,
     });
+    await calendarTriggerPattern.build();
 
   }
 }
