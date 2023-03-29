@@ -5,6 +5,8 @@ import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-d
 import { AppEngineApplication } from "../.gen/providers/google/app-engine-application";
 import { CloudSchedulerConstruct } from "../constructs/cloud-scheduler-construct";
 import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
+import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
+
 
 export interface CalendarTriggerPatternProps {
     cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
@@ -17,9 +19,12 @@ export class CalendarTriggerPattern extends Construct {
     cloudFunctionConstruct: CloudFunctionConstruct;
     calendarDataStore: DataStoreConstruct;
     props: CalendarTriggerPatternProps;
+    newEventTopic: PubsubTopic;
 
     constructor(scope: Construct, id: string, props: CalendarTriggerPatternProps) {
         super(scope, id);
+        this.props = props;
+
         this.cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function", {
             functionName: "google-calendar-poller" + props.suffix,
             entryPoint: "http_handler",
@@ -42,12 +47,21 @@ export class CalendarTriggerPattern extends Construct {
             appEngineApplication: props.dummyAppEngineApplication,
         });
 
-        new ProjectIamMember(this, "ProjectIamMember", {
+        new ProjectIamMember(this, "DatastoreProjectIamMember", {
             project: this.cloudFunctionConstruct.project,
             role: "roles/datastore.user",
             member: "serviceAccount:" + this.cloudFunctionConstruct.serviceAccount.email,
         });
-        this.props = props;
+        new ProjectIamMember(this, "PubSubProjectIamMember", {
+            project: this.cloudFunctionConstruct.project,
+            role: "roles/pubsub.publisher",
+            member: "serviceAccount:" + this.cloudFunctionConstruct.serviceAccount.email,            
+        });
+
+        this.newEventTopic = new PubsubTopic(this, "pubsub-topic", {
+            name: "calendar-event-pubsub-topic" + props.suffix,
+            project: this.cloudFunctionConstruct.project,
+        });
     }
 
     public async build() {
@@ -55,6 +69,7 @@ export class CalendarTriggerPattern extends Construct {
             "ICALURL": process.env.ICALURL!,
             "calendarDataStore": this.calendarDataStore.datastoreIndex.id,
             "SUFFIX": this.props.suffix,
+            "NEW_EVENT_TOPIC_ID": this.newEventTopic.id,
         });
         new CloudSchedulerConstruct(this, "cloud-scheduler", {
             name: "google-calendar-poller-scheduler" + this.props.suffix,
