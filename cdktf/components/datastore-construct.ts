@@ -4,12 +4,11 @@ import { CloudFunctionConstruct } from "./cloud-function-construct";
 import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
 import { ProjectService } from "../.gen/providers/google/project-service";
 import { AppEngineApplication } from "../.gen/providers/google/app-engine-application";
-import { Fn } from "cdktf";
 
 export interface DataStoreConstructProps {
     readonly kind: string;
     readonly properties: DatastoreIndexProperties[];
-    readonly cloudFunctionConstruct?: CloudFunctionConstruct;
+    readonly cloudFunctionConstruct: CloudFunctionConstruct;
     readonly appEngineApplication: AppEngineApplication;
 }
 
@@ -25,7 +24,7 @@ export class DataStoreConstruct extends Construct {
         const services = [];
         for (const api of apis) {
             services.push(new ProjectService(this, `${api.replaceAll(".", "")}`, {
-                project: props.cloudFunctionConstruct!.cloudFunction!.project,
+                project: props.cloudFunctionConstruct.project,
                 service: api,
                 disableOnDestroy: false,
             }));
@@ -35,13 +34,13 @@ export class DataStoreConstruct extends Construct {
         this.datastoreIndex = new DatastoreIndex(this, "datastore-index", {
             kind: props.kind,
             properties: props.properties,
-            project: props.cloudFunctionConstruct!.cloudFunction!.project,
+            project: props.cloudFunctionConstruct.project,
             dependsOn: services
         });
 
         if (props.cloudFunctionConstruct) {
             new ProjectIamMember(this, "ProjectIamMember", {
-                project: props.cloudFunctionConstruct.cloudFunction!.project,
+                project: props.cloudFunctionConstruct.project,
                 role: "roles/datastore.user",
                 member: "serviceAccount:" + props.cloudFunctionConstruct.serviceAccount!.email,
                 condition: {
@@ -50,9 +49,6 @@ export class DataStoreConstruct extends Construct {
                     expression: `resource.type == \"cloud_datastore_database\" && resource.name == \"${this.datastoreIndex.id}\"`,
                 }
             });
-            // const env = props.cloudFunctionConstruct.cloudFunction!.serviceConfig.environmentVariables;
-            // const db = { [props.kind]: props.kind };
-            // props.cloudFunctionConstruct.cloudFunction!.serviceConfig.environmentVariables = Fn.mergeMaps([env, db]);
         }
     }
 }

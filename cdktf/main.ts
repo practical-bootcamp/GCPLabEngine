@@ -36,29 +36,25 @@ class GcpLabEngineStack extends TerraformStack {
       skipDelete: false
     });
 
+    // This is a hack to enable datastore API for the project
+    // https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/datastore_index
+    const dummyAppEngineApplication = new AppEngineApplication(this, "app-engine-application", {
+      locationId: process.env.REGION!,
+      project: project.projectId,
+      databaseType: "CLOUD_DATASTORE_COMPATIBILITY",
+    });
+
     const cloudFunctionDeploymentConstruct = new CloudFunctionDeploymentConstruct(this, "cloud-function-deployment", {
       projectId: project.projectId,
       region: process.env.REGION!,
     });
-    const cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function");
-    await cloudFunctionConstruct.build({
+    const cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function", {
       functionName: "google-calendar-poller",
       entryPoint: "http_handler",
-      environmentVariables: {
-        "ICALURL": process.env.ICALURL!,
-      },
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
     });
 
-    // This a hack to enable datastore API for the project
-    // https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/datastore_index
-    const dummyAppEngineApplication = new AppEngineApplication(this, "app-engine-application", {
-      locationId: process.env.REGION!,
-      project: project.projectId,     
-      databaseType: "CLOUD_DATASTORE_COMPATIBILITY",
-    });
-
-    new DataStoreConstruct(this, "calendar-event-data-store", {
+    const calendarDataStore = new DataStoreConstruct(this, "calendar-event-data-store", {
       cloudFunctionConstruct: cloudFunctionConstruct,
       kind: "calendar-event",
       properties: [
@@ -72,6 +68,11 @@ class GcpLabEngineStack extends TerraformStack {
         }
       ],
       appEngineApplication: dummyAppEngineApplication,
+    });
+
+    await cloudFunctionConstruct.createCloudFunction({
+      "ICALURL": process.env.ICALURL!,
+      "calendarDataStore": calendarDataStore.datastoreIndex.id,
     });
 
     new CloudSchedulerConstruct(this, "cloud-scheduler", {

@@ -13,55 +13,56 @@ import { CloudFunctionDeploymentConstruct } from "./cloud-function-deployment-co
 export interface CloudFunctionConstructProps {
     readonly functionName: string;
     readonly entryPoint: string;
-    readonly environmentVariables?: { [key: string]: string };
     readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
 }
 
 export class CloudFunctionConstruct extends Construct {
     public cloudFunction?: Cloudfunctions2Function;
-    public serviceAccount?: ServiceAccount;
+    public serviceAccount: ServiceAccount;
+    private props: CloudFunctionConstructProps;
+    public project: string;
 
-    constructor(scope: Construct, id: string) {
+    constructor(scope: Construct, id: string, props: CloudFunctionConstructProps) {
         super(scope, id);
-    }
-
-    public async build(props: CloudFunctionConstructProps) {
-        new ArchiveProvider(this, "archive", {});
-        const options = {
-            folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
-            files: { include: ['*.js', '*.json'] },
-        };
-        const hash = await hashElement(path.resolve(__dirname, "..", "..", "functions", props.functionName), options);
-        const outputFileName = `function-source-${hash.hash}.zip`;
-        const code = new DataArchiveFile(this, "archiveFile", {
-            type: "zip",
-            sourceDir: path.resolve(__dirname, "..", "..", "functions", props.functionName),
-            outputPath: path.resolve(__dirname, "..", "cdktf.out", outputFileName)
-        });
-
-        const storageBucketObject = new StorageBucketObject(this, "storage-bucket-object", {
-            name: outputFileName,
-            bucket: props.cloudFunctionDeploymentConstruct.sourceBucket.name,
-            source: code.outputPath,
-        });
-
-
         this.serviceAccount = new ServiceAccount(this, "service-account", {
             accountId: props.functionName,
             project: props.cloudFunctionDeploymentConstruct.projectId,
             displayName: props.functionName,
         });
+        this.props = props;
+        this.project = props.cloudFunctionDeploymentConstruct.projectId;
+    }
+
+    public async createCloudFunction(environmentVariables?: { [key: string]: string }) {
+        new ArchiveProvider(this, "archive", {});
+        const options = {
+            folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
+            files: { include: ['*.js', '*.json'] },
+        };
+        const hash = await hashElement(path.resolve(__dirname, "..", "..", "functions", this.props.functionName), options);
+        const outputFileName = `function-source-${hash.hash}.zip`;
+        const code = new DataArchiveFile(this, "archiveFile", {
+            type: "zip",
+            sourceDir: path.resolve(__dirname, "..", "..", "functions", this.props.functionName),
+            outputPath: path.resolve(__dirname, "..", "cdktf.out", outputFileName)
+        });
+
+        const storageBucketObject = new StorageBucketObject(this, "storage-bucket-object", {
+            name: outputFileName,
+            bucket: this.props.cloudFunctionDeploymentConstruct.sourceBucket.name,
+            source: code.outputPath,
+        });
 
         this.cloudFunction = new Cloudfunctions2Function(this, "cloud-function", {
-            name: props.functionName,
-            project: props.cloudFunctionDeploymentConstruct.projectId,
-            location: props.cloudFunctionDeploymentConstruct.region,
+            name: this.props.functionName,
+            project: this.props.cloudFunctionDeploymentConstruct.projectId,
+            location: this.props.cloudFunctionDeploymentConstruct.region,
             buildConfig: {
                 runtime: "nodejs18",
-                entryPoint: props.entryPoint,
+                entryPoint: this.props.entryPoint,
                 source: {
                     storageSource: {
-                        bucket: props.cloudFunctionDeploymentConstruct.sourceBucket.name,
+                        bucket: this.props.cloudFunctionDeploymentConstruct.sourceBucket.name,
                         object: storageBucketObject.name,
                     }
                 }
@@ -71,10 +72,10 @@ export class CloudFunctionConstruct extends Construct {
                 availableMemory: "128Mi",
                 timeoutSeconds: 60,
                 serviceAccountEmail: this.serviceAccount.email,
-                environmentVariables: props.environmentVariables
+                environmentVariables: environmentVariables ?? {},
             },
         });
-  
+
         new Cloudfunctions2FunctionIamBinding(this, "cloudfunctions2-function-iam-member", {
             project: this.cloudFunction.project,
             location: this.cloudFunction.location,
@@ -84,7 +85,7 @@ export class CloudFunctionConstruct extends Construct {
         });
 
         new CloudRunServiceIamBinding(this, "cloud-run-service-iam-binding", {
-            project: props.cloudFunctionDeploymentConstruct.projectId,
+            project: this.props.cloudFunctionDeploymentConstruct.projectId,
             location: this.cloudFunction.location,
             service: this.cloudFunction.name,
             role: "roles/run.invoker",
