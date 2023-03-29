@@ -1,9 +1,9 @@
 import { Construct } from "constructs";
-import { StorageBucketObject } from "./../.gen/providers/google/storage-bucket-object";
-import { ServiceAccount } from "./../.gen/providers/google/service-account";
+import { StorageBucketObject } from "../.gen/providers/google/storage-bucket-object";
+import { ServiceAccount } from "../.gen/providers/google/service-account";
 import { Cloudfunctions2Function } from "../.gen/providers/google/cloudfunctions2-function";
-import { Cloudfunctions2FunctionIamBinding } from "./../.gen/providers/google/cloudfunctions2-function-iam-binding";
-import { CloudRunServiceIamBinding } from "./../.gen/providers/google/cloud-run-service-iam-binding";
+import { Cloudfunctions2FunctionIamBinding } from "../.gen/providers/google/cloudfunctions2-function-iam-binding";
+import { CloudRunServiceIamBinding } from "../.gen/providers/google/cloud-run-service-iam-binding";
 import { ArchiveProvider } from "../.gen/providers/archive/provider";
 import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
 import path = require("path");
@@ -44,7 +44,7 @@ export class CloudFunctionConstruct extends Construct {
         const code = new DataArchiveFile(this, "archiveFile", {
             type: "zip",
             sourceDir: path.resolve(__dirname, "..", "..", "functions", this.props.functionName),
-            outputPath: path.resolve(__dirname, "..", "cdktf.out", outputFileName)
+            outputPath: path.resolve(__dirname, "..", "cdktf.out","functions", outputFileName)
         });
 
         const storageBucketObject = new StorageBucketObject(this, "storage-bucket-object", {

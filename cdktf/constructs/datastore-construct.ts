@@ -1,5 +1,5 @@
 import { Construct } from "constructs";
-import { DatastoreIndex, DatastoreIndexProperties } from "./../.gen/providers/google/datastore-index";
+import { DatastoreIndex, DatastoreIndexProperties } from "../.gen/providers/google/datastore-index";
 import { CloudFunctionConstruct } from "./cloud-function-construct";
 import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
 import { ProjectService } from "../.gen/providers/google/project-service";

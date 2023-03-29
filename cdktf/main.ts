@@ -6,11 +6,11 @@ import { DataGoogleBillingAccount } from "./.gen/providers/google/data-google-bi
 import { AppEngineApplication } from "./.gen/providers/google/app-engine-application";
 
 
-import { CloudFunctionConstruct } from "./components/cloud-function-construct";
+import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
 import * as dotenv from 'dotenv';
-import { CloudFunctionDeploymentConstruct } from "./components/cloud-function-deployment-construct";
-import { CloudSchedulerConstruct } from "./components/cloud-scheduler-construct";
-import { DataStoreConstruct } from "./components/datastore-construct";
+import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
+import { CloudSchedulerConstruct } from "./constructs/cloud-scheduler-construct";
+import { DataStoreConstruct } from "./constructs/datastore-construct";
 // import { ProjectService } from "./.gen/providers/google/project-service";
 dotenv.config();
 

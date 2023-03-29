@@ -1,8 +1,8 @@
 import { Construct } from "constructs";
 
-import { StringResource } from "./../.gen/providers/random/string-resource";
-import { RandomProvider } from "./../.gen/providers/random/provider";
-import { StorageBucket } from "./../.gen/providers/google/storage-bucket";
+import { StringResource } from "../.gen/providers/random/string-resource";
+import { RandomProvider } from "../.gen/providers/random/provider";
+import { StorageBucket } from "../.gen/providers/google/storage-bucket";
 import { ProjectService } from "../.gen/providers/google/project-service";
 
 
