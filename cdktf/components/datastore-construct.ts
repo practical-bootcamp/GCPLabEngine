@@ -1,9 +1,10 @@
 import { Construct } from "constructs";
 import { DatastoreIndex, DatastoreIndexProperties } from "./../.gen/providers/google/datastore-index";
 import { CloudFunctionConstruct } from "./cloud-function-construct";
-// import { ServiceAccountIamBinding } from "../.gen/providers/google/service-account-iam-binding";
+import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
 import { ProjectService } from "../.gen/providers/google/project-service";
 import { AppEngineApplication } from "../.gen/providers/google/app-engine-application";
+import { Fn } from "cdktf";
 
 export interface DataStoreConstructProps {
     readonly kind: string;
@@ -39,19 +40,19 @@ export class DataStoreConstruct extends Construct {
         });
 
         if (props.cloudFunctionConstruct) {
-            // new ServiceAccountIamBinding(this, "service-account-iam-binding", {
-            //     serviceAccountId: props.cloudFunctionConstruct.serviceAccount!.name,
-            //     role: "roles/datastore.user",
-            //     members: ["serviceAccount:" + props.cloudFunctionConstruct.serviceAccount!.email],
-            //     condition: {
-            //         title: "always-true",
-            //         description: "This condition is always true",
-            //         expression: `resource.type == \"cloud_datastore_database\"&& resource.id == \"${this.datastoreIndex.id}\"`,
-            //     }
-            // });
+            new ProjectIamMember(this, "ProjectIamMember", {
+                project: props.cloudFunctionConstruct.cloudFunction!.project,
+                role: "roles/datastore.user",
+                member: "serviceAccount:" + props.cloudFunctionConstruct.serviceAccount!.email,
+                condition: {
+                    title: "datastore.user for " + props.kind + " index",
+                    description: "datastore.user for " + props.kind + " index",
+                    expression: `resource.type == \"cloud_datastore_database\" && resource.name == \"${this.datastoreIndex.id}\"`,
+                }
+            });
             // const env = props.cloudFunctionConstruct.cloudFunction!.serviceConfig.environmentVariables;
-            // env[props.kind] = this.datastoreIndex.id;
-            // props.cloudFunctionConstruct.cloudFunction!.serviceConfig.environmentVariables = env;
+            // const db = { [props.kind]: props.kind };
+            // props.cloudFunctionConstruct.cloudFunction!.serviceConfig.environmentVariables = Fn.mergeMaps([env, db]);
         }
     }
 }
