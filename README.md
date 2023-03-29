@@ -11,6 +11,7 @@ gcloud auth application-default login
 ```
 
 
-https://stackoverflow.com/questions/61744176/creating-google-calendar-events-with-a-gcp-service-account
+### Congiure 
+You need to select a region support all services.
 
-Provided the required scopes for your service account in the OAuth consent screen settings in GCP.
+

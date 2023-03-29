@@ -21,7 +21,7 @@ export class CloudFunctionDeploymentConstruct extends Construct {
         new RandomProvider(this, "random", {});
 
         this.projectId = props.projectId;
-        this.region = props.region;        
+        this.region = props.region;
 
         const apis = [
             "iam.googleapis.com",
@@ -49,8 +49,9 @@ export class CloudFunctionDeploymentConstruct extends Construct {
             upper: false,
         })
 
-        this.sourceBucket = new StorageBucket(this, "sourceBucket", {
+        this.sourceBucket = new StorageBucket(this, "sourceBucket", {            
             name: "source" + bucketSuffix.result,
+            project: props.projectId,
             location: props.region,
             storageClass: "REGIONAL",
             forceDestroy: true,

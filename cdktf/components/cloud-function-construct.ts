@@ -45,6 +45,7 @@ export class CloudFunctionConstruct extends Construct {
             source: code.outputPath,
         });
 
+
         this.serviceAccount = new ServiceAccount(this, "service-account", {
             accountId: props.functionName,
             project: props.cloudFunctionDeploymentConstruct.projectId,
@@ -53,6 +54,7 @@ export class CloudFunctionConstruct extends Construct {
 
         this.cloudFunction = new Cloudfunctions2Function(this, "cloud-function", {
             name: props.functionName,
+            project: props.cloudFunctionDeploymentConstruct.projectId,
             location: props.cloudFunctionDeploymentConstruct.region,
             buildConfig: {
                 runtime: "nodejs18",
@@ -72,6 +74,7 @@ export class CloudFunctionConstruct extends Construct {
                 environmentVariables: props.environmentVariables
             },
         });
+  
         new Cloudfunctions2FunctionIamBinding(this, "cloudfunctions2-function-iam-member", {
             project: this.cloudFunction.project,
             location: this.cloudFunction.location,
