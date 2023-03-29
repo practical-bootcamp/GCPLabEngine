@@ -53,7 +53,7 @@ export class CloudFunctionConstruct extends Construct {
 
         this.cloudFunction = new Cloudfunctions2Function(this, "cloud-function", {
             name: props.functionName,
-            location: "us-central1",
+            location: props.cloudFunctionDeploymentConstruct.region,
             buildConfig: {
                 runtime: "nodejs18",
                 entryPoint: props.entryPoint,

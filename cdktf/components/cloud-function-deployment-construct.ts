@@ -8,17 +8,20 @@ import { ProjectService } from "../.gen/providers/google/project-service";
 
 export interface CloudFunctionDeploymentConstructProps {
     readonly projectId: string;
+    readonly region: string;
 }
 
 export class CloudFunctionDeploymentConstruct extends Construct {
     public readonly sourceBucket: StorageBucket;
     public readonly projectId: string;
+    readonly region: string;
 
     constructor(scope: Construct, id: string, props: CloudFunctionDeploymentConstructProps) {
         super(scope, id);
         new RandomProvider(this, "random", {});
 
         this.projectId = props.projectId;
+        this.region = props.region;        
 
         const apis = [
             "iam.googleapis.com",
@@ -48,7 +51,8 @@ export class CloudFunctionDeploymentConstruct extends Construct {
 
         this.sourceBucket = new StorageBucket(this, "sourceBucket", {
             name: "source" + bucketSuffix.result,
-            location: "US",
+            location: props.region,
+            storageClass: "REGIONAL",
             forceDestroy: true,
             uniformBucketLevelAccess: true,
             lifecycleRule: [{

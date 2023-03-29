@@ -22,6 +22,7 @@ class GcpLabEngineStack extends TerraformStack {
 
     const cloudFunctionDeploymentConstruct = new CloudFunctionDeploymentConstruct(this, "cloud-function-deployment", {
       projectId: projectId,
+      region: "us-central1",
     });
     const cloudFunctionConstruct = new CloudFunctionConstruct(this, "cloud-function");
     await cloudFunctionConstruct.build({
