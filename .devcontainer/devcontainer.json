@@ -7,13 +7,17 @@
     },
     "ghcr.io/devcontainers-contrib/features/terraform-asdf:2": {
       "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/dotnet:1": {
+      "version": "latest"
     }
   },
   "customizations": {
-    "vscode": {     
+    "vscode": {
       "extensions": [
         "github.copilot",
-        "ms-vscode.vscode-typescript-next"
+        "ms-vscode.vscode-typescript-next",
+        "ms-dotnettools.csharp"
       ]
     }
   }
