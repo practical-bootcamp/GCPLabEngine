@@ -5,10 +5,8 @@ import { Project } from "./.gen/providers/google/project";
 import { DataGoogleBillingAccount } from "./.gen/providers/google/data-google-billing-account";
 import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
-
 import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
-import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
-import { PubsubSubscription } from "./.gen/providers/google/pubsub-subscription";
+import { PubSubCloudFunctionSubscriberPattern } from "./patterns/pubsub-cloudfunction-subscriber";
 dotenv.config();
 
 class GcpLabEngineStack extends TerraformStack {
@@ -39,33 +37,17 @@ class GcpLabEngineStack extends TerraformStack {
       region: process.env.REGION!,
     });
 
-    const calendarTriggerPattern = await CalendarTriggerPattern.createCalendarTriggerPattern(this, "calendar-trigger", {
+    const calendarTriggerPattern = await CalendarTriggerPattern.create(this, "calendar-trigger", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       suffix: ""
     });
-
-    const cloudFunctionConstruct = await CloudFunctionConstruct.createCloudFunctionConstruct(this, "cloud-function", {
-      functionName: "class-grader",
+ 
+    await PubSubCloudFunctionSubscriberPattern.create(this, "class-grader-pubsub-cloud-function-subscriber", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
+      functionName: "class-grader",
+      eventTopic: calendarTriggerPattern.eventTopic,
+      filter: `attributes.type="START"`,
     });
-
-    new PubsubSubscription(this, "subscription", {
-      name: "class-grader-subscription",
-      topic: calendarTriggerPattern.eventTopic.name,
-      project: project.projectId,
-      ackDeadlineSeconds: 20,
-      retainAckedMessages: true,
-      messageRetentionDuration: "1200s",
-      pushConfig:
-      {
-        pushEndpoint: cloudFunctionConstruct.cloudFunction.serviceConfig.uri,
-        oidcToken: {
-          serviceAccountEmail: cloudFunctionConstruct.serviceAccount.email
-        }
-      }, 
-      filter: `attributes.type="START"`,          
-    });
-
   }
 }
 

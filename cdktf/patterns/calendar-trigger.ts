@@ -23,7 +23,7 @@ export class CalendarTriggerPattern extends Construct {
         this.props = props;
     }
 
-    public async build(props: CalendarTriggerPatternProps) {
+    private async build(props: CalendarTriggerPatternProps) {
         this.eventTopic = new PubsubTopic(this, "start-pubsub-topic", {
             name: "start-calendar-event-pubsub-topic" + props.suffix,
             project: props.cloudFunctionDeploymentConstruct.project,
@@ -62,7 +62,7 @@ export class CalendarTriggerPattern extends Construct {
         });
     }
 
-    public static async createCalendarTriggerPattern(scope: Construct, id: string, props: CalendarTriggerPatternProps) {
+    public static async create(scope: Construct, id: string, props: CalendarTriggerPatternProps) {
         const me = new CalendarTriggerPattern(scope, id, props);
         await me.build(props);
         return me;
