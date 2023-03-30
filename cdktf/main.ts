@@ -8,7 +8,7 @@ import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-de
 
 import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
 import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
-// import { ProjectService } from "./.gen/providers/google/project-service";
+import { PubsubSubscription } from "./.gen/providers/google/pubsub-subscription";
 dotenv.config();
 
 class GcpLabEngineStack extends TerraformStack {
@@ -44,15 +44,31 @@ class GcpLabEngineStack extends TerraformStack {
       suffix: ""
     });
 
-    await CloudFunctionConstruct.createCloudFunctionConstruct(this, "cloud-function", {
+    const cloudFunctionConstruct = await CloudFunctionConstruct.createCloudFunctionConstruct(this, "cloud-function", {
       functionName: "class-grader",
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
-      eventTrigger:
-      {
-        eventType: "google.cloud.pubsub.topic.v1.messagePublished",
-        pubsubTopic: calendarTriggerPattern.startEventTopic.id,       
-      },
     });
+
+    new PubsubSubscription(this, "subscription", {
+      name: "class-grader-subscription",
+      topic: calendarTriggerPattern.eventTopic.name,
+      project: project.projectId,
+      ackDeadlineSeconds: 20,
+      retainAckedMessages: true,
+      messageRetentionDuration: "1200s",
+      pushConfig:
+      {
+        pushEndpoint: cloudFunctionConstruct.cloudFunction.serviceConfig.uri,
+        oidcToken: {
+          serviceAccountEmail: cloudFunctionConstruct.serviceAccount.email
+        }
+      },     
+      
+    });
+
+
+
+
 
 
   }

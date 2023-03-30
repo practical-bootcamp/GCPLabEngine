@@ -1,10 +1,6 @@
 const { Datastore } = require('@google-cloud/datastore');
 
-const datastore = new Datastore(
-    {
-        projectId: process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT,
-    }
-);
+const datastore = new Datastore({ projectId: process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT, });
 
 const suffix = process.env.SUFFIX || '';
 
@@ -33,4 +29,22 @@ async function saveEvent(event) {
     console.log(`Saved ${task.key.name}: ${task.data.summary}`);
 }
 
-module.exports = { getEvent, saveEvent };
+async function deleteEvent(event) {
+    await datastore.delete(event[datastore.KEY]);
+    console.log(`Deleted ${event[datastore.KEY]}`);
+}
+
+async function getJustEndEvents() {
+    const kind = 'calendar-event' + suffix;
+    const query = datastore.createQuery(kind);
+    const start = new Date();
+    start.setMinutes(start.getMinutes() - 1);
+    const end = new Date();
+    end.setMinutes(end.getMinutes() + 1);
+    query.filter('end', '>', start);
+    query.filter('end', '<', end);
+    const [tasks] = await datastore.runQuery(query);
+    return tasks;
+}
+
+module.exports = { getEvent, saveEvent, getJustEndEvents, deleteEvent };

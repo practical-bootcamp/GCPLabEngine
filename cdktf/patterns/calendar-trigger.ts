@@ -16,8 +16,7 @@ export interface CalendarTriggerPatternProps {
 export class CalendarTriggerPattern extends Construct {
     cloudFunctionConstruct!: CloudFunctionConstruct;
     props: CalendarTriggerPatternProps;
-    startEventTopic!: PubsubTopic;
-    endEventTopic!: PubsubTopic;
+    eventTopic!: PubsubTopic;   
 
     private constructor(scope: Construct, id: string, props: CalendarTriggerPatternProps) {
         super(scope, id);
@@ -25,13 +24,8 @@ export class CalendarTriggerPattern extends Construct {
     }
 
     public async build(props: CalendarTriggerPatternProps) {
-        this.startEventTopic = new PubsubTopic(this, "start-pubsub-topic", {
+        this.eventTopic = new PubsubTopic(this, "start-pubsub-topic", {
             name: "start-calendar-event-pubsub-topic" + props.suffix,
-            project: props.cloudFunctionDeploymentConstruct.project,
-        });
-
-        this.endEventTopic = new PubsubTopic(this, "end-pubsub-topic", {
-            name: "end-calendar-event-pubsub-topic" + props.suffix,
             project: props.cloudFunctionDeploymentConstruct.project,
         });
 
@@ -42,8 +36,7 @@ export class CalendarTriggerPattern extends Construct {
             environmentVariables: {
                 "ICALURL": process.env.ICALURL!,
                 "SUFFIX": this.props.suffix,
-                "START_EVENT_TOPIC_ID": this.startEventTopic.id,
-                "END_EVENT_TOPIC_ID": this.endEventTopic.id,
+                "EVENT_TOPIC_ID": this.eventTopic.id,               
             }
         });
 
@@ -63,12 +56,9 @@ export class CalendarTriggerPattern extends Construct {
             cronExpression: this.props.cronExpression ?? "*/15 * * * *",
             cloudFunctionConstruct: this.cloudFunctionConstruct,
         });
-
-        new TerraformOutput(this, "startEventTopic", {
-            value: this.startEventTopic.id
-        });
-        new TerraformOutput(this, "endEventTopic", {
-            value: this.endEventTopic.id
+ 
+        new TerraformOutput(this, "calender-event-topic", {
+            value: this.eventTopic.id
         });
     }
 

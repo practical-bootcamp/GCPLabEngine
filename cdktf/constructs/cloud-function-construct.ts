@@ -35,7 +35,7 @@ export class CloudFunctionConstruct extends Construct {
     }
 
     private async build(props: CloudFunctionConstructProps) {
-        
+
         const options = {
             folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
             files: { include: ['*.js', '*.json'] },

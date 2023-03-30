@@ -1,30 +1,48 @@
 const functions = require('@google-cloud/functions-framework');
-const { getEvents } = require('./calendar');
-const { getEvent, saveEvent } = require('./datastore');
+const { getNewEvents } = require('./calendar');
+const { getEvent, saveEvent, getJustEndEvents, deleteEvent } = require('./datastore');
+const { publishMessageWithAttributes } = require('./pubsub');
 
 const icalUrl = process.env.ICALURL;
+const EVENT_TOPIC_ID = process.env.EVENT_TOPIC_ID;
 
 functions.http('google-calendar-poller', async (req, res) => {
-  const events = await getEvents(icalUrl);  
-  console.log(events);
-  for (const event of events) {
-    console.log("getEvent");
+  const newEvents = await getNewEvents(icalUrl);
+  console.log(newEvents);
+  for (const event of newEvents) {
     const savedEvent = await getEvent(event);
-    console.log("done getEvent");
-    if (savedEvent) continue;
+    if (savedEvent) {
+      continue;
+    }
     await saveEvent(event);
+    await publishMessageWithAttributes(EVENT_TOPIC_ID, event, "START");
   }
-  res.send(events);
+  const justEndEvents = await getJustEndEvents();
+  console.log(justEndEvents);
+  for (const event of justEndEvents) {
+    await publishMessageWithAttributes(EVENT_TOPIC_ID, event, "END");
+    await deleteEvent(event);
+  }
+  res.send({ newEvents, justEndEvents });
 });
 
 
 // (async () => {
-//   const events = await getEvents(icalUrl);
-//   console.log(events);
-//   for (const event of events) {
+//   const newEvents = await getNewEvents(icalUrl);
+//   console.log(newEvents);
+//   for (const event of newEvents) {
 //     const savedEvent = await getEvent(event);
-//     if (savedEvent) continue;
+//     if (savedEvent) {
+//       continue;
+//     }
 //     await saveEvent(event);
+//     await publishMessageWithAttributes(START_EVENT_TOPIC_ID, event);
+//   }
+//   const justEndEvents = await getJustEndEvents();
+//   console.log(justEndEvents);
+//   for (const event of justEndEvents) {
+//     await publishMessageWithAttributes(END_EVENT_TOPIC_ID, event);
+//     await deleteEvent(event);
 //   }
 // })();
 
