@@ -7,6 +7,7 @@ import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
 
 import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
+import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
 // import { ProjectService } from "./.gen/providers/google/project-service";
 dotenv.config();
 
@@ -38,10 +39,22 @@ class GcpLabEngineStack extends TerraformStack {
       region: process.env.REGION!,
     });
 
-    await CalendarTriggerPattern.createCalendarTriggerPattern(this, "calendar-trigger", {
+    const calendarTriggerPattern = await CalendarTriggerPattern.createCalendarTriggerPattern(this, "calendar-trigger", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       suffix: ""
     });
+
+    await CloudFunctionConstruct.createCloudFunctionConstruct(this, "cloud-function", {
+      functionName: "class-grader",
+      cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
+      eventTrigger:
+      {
+        eventType: "google.cloud.pubsub.topic.v1.messagePublished",
+        pubsubTopic: calendarTriggerPattern.startEventTopic.id,       
+      },
+    });
+
+
   }
 }
 

@@ -14,4 +14,4 @@ gcloud auth application-default login
 ### Congiure 
 You need to select a region support all services.
 
-
+gcloud pubsub topics publish projects/gcplabengine-dev1/topics/start-calendar-event-pubsub-topic --message="Friend"

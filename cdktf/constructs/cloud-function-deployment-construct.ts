@@ -4,6 +4,7 @@ import { StringResource } from "../.gen/providers/random/string-resource";
 import { RandomProvider } from "../.gen/providers/random/provider";
 import { StorageBucket } from "../.gen/providers/google/storage-bucket";
 import { ProjectService } from "../.gen/providers/google/project-service";
+import { ArchiveProvider } from "../.gen/providers/archive/provider";
 
 
 export interface CloudFunctionDeploymentConstructProps {
@@ -18,6 +19,7 @@ export class CloudFunctionDeploymentConstruct extends Construct {
 
     constructor(scope: Construct, id: string, props: CloudFunctionDeploymentConstructProps) {
         super(scope, id);
+        new ArchiveProvider(this, "archive", {});
         new RandomProvider(this, "random", {});
 
         this.project = props.project;
@@ -33,6 +35,7 @@ export class CloudFunctionDeploymentConstruct extends Construct {
             "storage-api.googleapis.com",
             "storage-component.googleapis.com",
             "cloudbuild.googleapis.com",
+            "eventarc.googleapis.com",
         ];
         const services = [];
         for (const api of apis) {
@@ -49,7 +52,7 @@ export class CloudFunctionDeploymentConstruct extends Construct {
             upper: false,
         })
 
-        this.sourceBucket = new StorageBucket(this, "sourceBucket", {            
+        this.sourceBucket = new StorageBucket(this, "sourceBucket", {
             name: "source" + bucketSuffix.result,
             project: props.project,
             location: props.region,

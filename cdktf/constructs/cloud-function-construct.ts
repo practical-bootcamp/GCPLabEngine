@@ -1,10 +1,9 @@
 import { Construct } from "constructs";
 import { StorageBucketObject } from "../.gen/providers/google/storage-bucket-object";
 import { ServiceAccount } from "../.gen/providers/google/service-account";
-import { Cloudfunctions2Function } from "../.gen/providers/google/cloudfunctions2-function";
+import { Cloudfunctions2Function, Cloudfunctions2FunctionEventTrigger } from "../.gen/providers/google/cloudfunctions2-function";
 import { Cloudfunctions2FunctionIamBinding } from "../.gen/providers/google/cloudfunctions2-function-iam-binding";
 import { CloudRunServiceIamBinding } from "../.gen/providers/google/cloud-run-service-iam-binding";
-import { ArchiveProvider } from "../.gen/providers/archive/provider";
 import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
 import path = require("path");
 import { hashElement } from 'folder-hash';
@@ -12,9 +11,10 @@ import { CloudFunctionDeploymentConstruct } from "./cloud-function-deployment-co
 
 export interface CloudFunctionConstructProps {
     readonly functionName: string;
-    readonly entryPoint: string;
+    readonly entryPoint?: string;
     readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
-    environmentVariables?: { [key: string]: string }
+    readonly environmentVariables?: { [key: string]: string };
+    readonly eventTrigger?: Cloudfunctions2FunctionEventTrigger;
 }
 
 export class CloudFunctionConstruct extends Construct {
@@ -35,7 +35,7 @@ export class CloudFunctionConstruct extends Construct {
     }
 
     private async build(props: CloudFunctionConstructProps) {
-        new ArchiveProvider(this, "archive", {});
+        
         const options = {
             folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
             files: { include: ['*.js', '*.json'] },
@@ -60,7 +60,7 @@ export class CloudFunctionConstruct extends Construct {
             location: this.props.cloudFunctionDeploymentConstruct.region,
             buildConfig: {
                 runtime: "nodejs18",
-                entryPoint: this.props.entryPoint,
+                entryPoint: this.props.entryPoint ?? this.props.functionName,
                 source: {
                     storageSource: {
                         bucket: this.props.cloudFunctionDeploymentConstruct.sourceBucket.name,
@@ -75,6 +75,7 @@ export class CloudFunctionConstruct extends Construct {
                 serviceAccountEmail: this.serviceAccount.email,
                 environmentVariables: props.environmentVariables ?? {},
             },
+            eventTrigger: props.eventTrigger,
         });
 
         new Cloudfunctions2FunctionIamBinding(this, "cloudfunctions2-function-iam-member", {

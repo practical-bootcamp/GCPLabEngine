@@ -4,18 +4,20 @@ import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-d
 import { CloudSchedulerConstruct } from "../constructs/cloud-scheduler-construct";
 import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
 import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
+import { TerraformOutput } from "cdktf";
 
 
 export interface CalendarTriggerPatternProps {
-    cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
-    suffix: string;
-    cronExpression?: string;   
+    readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
+    readonly suffix: string;
+    readonly cronExpression?: string;
 }
 
 export class CalendarTriggerPattern extends Construct {
     cloudFunctionConstruct!: CloudFunctionConstruct;
     props: CalendarTriggerPatternProps;
-    newEventTopic!: PubsubTopic;
+    startEventTopic!: PubsubTopic;
+    endEventTopic!: PubsubTopic;
 
     private constructor(scope: Construct, id: string, props: CalendarTriggerPatternProps) {
         super(scope, id);
@@ -23,19 +25,25 @@ export class CalendarTriggerPattern extends Construct {
     }
 
     public async build(props: CalendarTriggerPatternProps) {
-        this.newEventTopic = new PubsubTopic(this, "pubsub-topic", {
-            name: "calendar-event-pubsub-topic" + props.suffix,
+        this.startEventTopic = new PubsubTopic(this, "start-pubsub-topic", {
+            name: "start-calendar-event-pubsub-topic" + props.suffix,
+            project: props.cloudFunctionDeploymentConstruct.project,
+        });
+
+        this.endEventTopic = new PubsubTopic(this, "end-pubsub-topic", {
+            name: "end-calendar-event-pubsub-topic" + props.suffix,
             project: props.cloudFunctionDeploymentConstruct.project,
         });
 
         this.cloudFunctionConstruct = await CloudFunctionConstruct.createCloudFunctionConstruct(this, "cloud-function", {
             functionName: "google-calendar-poller" + props.suffix,
-            entryPoint: "http_handler",
+            entryPoint: "google-calendar-poller",
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
             environmentVariables: {
-                "ICALURL": process.env.ICALURL!,                
+                "ICALURL": process.env.ICALURL!,
                 "SUFFIX": this.props.suffix,
-                "NEW_EVENT_TOPIC_ID": this.newEventTopic.id,
+                "START_EVENT_TOPIC_ID": this.startEventTopic.id,
+                "END_EVENT_TOPIC_ID": this.endEventTopic.id,
             }
         });
 
@@ -54,6 +62,13 @@ export class CalendarTriggerPattern extends Construct {
             name: "google-calendar-poller-scheduler" + this.props.suffix,
             cronExpression: this.props.cronExpression ?? "*/15 * * * *",
             cloudFunctionConstruct: this.cloudFunctionConstruct,
+        });
+
+        new TerraformOutput(this, "startEventTopic", {
+            value: this.startEventTopic.id
+        });
+        new TerraformOutput(this, "endEventTopic", {
+            value: this.endEventTopic.id
         });
     }
 
