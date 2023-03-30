@@ -13,6 +13,8 @@ export interface CloudFunctionConstructProps {
     readonly functionName: string;
     readonly runtime: string;
     readonly entryPoint?: string;
+    readonly availableMemory?: string;
+    readonly timeout?: number;
     readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
     readonly environmentVariables?: { [key: string]: string };
     readonly eventTrigger?: Cloudfunctions2FunctionEventTrigger;
@@ -71,8 +73,8 @@ export class CloudFunctionConstruct extends Construct {
             },
             serviceConfig: {
                 maxInstanceCount: 1,
-                availableMemory: "128Mi",
-                timeoutSeconds: 60,
+                availableMemory: props.availableMemory ?? "128Mi",
+                timeoutSeconds: props.timeout ?? 60,
                 serviceAccountEmail: this.serviceAccount.email,
                 environmentVariables: props.environmentVariables ?? {},
             },
