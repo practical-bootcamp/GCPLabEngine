@@ -3,7 +3,6 @@ import { App, TerraformStack } from "cdktf";
 import { GoogleProvider } from "./.gen/providers/google/provider/index";
 import { Project } from "./.gen/providers/google/project";
 import { DataGoogleBillingAccount } from "./.gen/providers/google/data-google-billing-account";
-import { AppEngineApplication } from "./.gen/providers/google/app-engine-application";
 import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
 
@@ -33,13 +32,6 @@ class GcpLabEngineStack extends TerraformStack {
       skipDelete: false
     });
 
-    // This is a hack to enable datastore API for the project
-    // https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/datastore_index
-    const dummyAppEngineApplication = new AppEngineApplication(this, "app-engine-application", {
-      locationId: process.env.REGION!,
-      project: project.projectId,
-      databaseType: "CLOUD_DATASTORE_COMPATIBILITY",
-    });
 
     const cloudFunctionDeploymentConstruct = new CloudFunctionDeploymentConstruct(this, "cloud-function-deployment", {
       project: project.projectId,
@@ -48,8 +40,7 @@ class GcpLabEngineStack extends TerraformStack {
 
     await CalendarTriggerPattern.createCalendarTriggerPattern(this, "calendar-trigger", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
-      suffix: "",
-      dummyAppEngineApplication: dummyAppEngineApplication,
+      suffix: ""
     });
   }
 }

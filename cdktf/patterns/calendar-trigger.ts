@@ -1,8 +1,6 @@
 import { Construct } from "constructs";
 import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
-// import { DataStoreConstruct } from "../constructs/datastore-construct";
 import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
-import { AppEngineApplication } from "../.gen/providers/google/app-engine-application";
 import { CloudSchedulerConstruct } from "../constructs/cloud-scheduler-construct";
 import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
 import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
@@ -11,13 +9,11 @@ import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
 export interface CalendarTriggerPatternProps {
     cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
     suffix: string;
-    cronExpression?: string;
-    dummyAppEngineApplication: AppEngineApplication;
+    cronExpression?: string;   
 }
 
 export class CalendarTriggerPattern extends Construct {
     cloudFunctionConstruct!: CloudFunctionConstruct;
-    // calendarDataStore!: DataStoreConstruct;
     props: CalendarTriggerPatternProps;
     newEventTopic!: PubsubTopic;
 
@@ -27,23 +23,6 @@ export class CalendarTriggerPattern extends Construct {
     }
 
     public async build(props: CalendarTriggerPatternProps) {
-
-        // this.calendarDataStore = new DataStoreConstruct(this, "calendar-event-data-store", {
-        //     cloudFunctionConstruct: this.cloudFunctionConstruct,
-        //     kind: "calendar-event" + props.suffix,
-        //     properties: [
-        //         {
-        //             name: "start",
-        //             direction: "ASCENDING",
-        //         },
-        //         {
-        //             name: "end",
-        //             direction: "ASCENDING",
-        //         }
-        //     ],
-        //     appEngineApplication: props.dummyAppEngineApplication,
-        // });
-
         this.newEventTopic = new PubsubTopic(this, "pubsub-topic", {
             name: "calendar-event-pubsub-topic" + props.suffix,
             project: props.cloudFunctionDeploymentConstruct.project,
@@ -54,8 +33,7 @@ export class CalendarTriggerPattern extends Construct {
             entryPoint: "http_handler",
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
             environmentVariables: {
-                "ICALURL": process.env.ICALURL!,
-                // "calendarDataStore": this.calendarDataStore.datastoreIndex.id,
+                "ICALURL": process.env.ICALURL!,                
                 "SUFFIX": this.props.suffix,
                 "NEW_EVENT_TOPIC_ID": this.newEventTopic.id,
             }
