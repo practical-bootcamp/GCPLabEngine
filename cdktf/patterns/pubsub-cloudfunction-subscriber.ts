@@ -22,8 +22,9 @@ export class PubSubCloudFunctionSubscriberPattern extends Construct {
     }
 
     private async build(props: PubSubCloudFunctionSubscriberPatternProps) {
-        const cloudFunctionConstruct = await CloudFunctionConstruct.createCloudFunctionConstruct(this, "cloud-function", {
+        const cloudFunctionConstruct = await CloudFunctionConstruct.create(this, "cloud-function", {
             functionName: props.functionName,
+            runtime: "nodejs16",
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
         });
 

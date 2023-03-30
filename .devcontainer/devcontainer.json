@@ -17,7 +17,8 @@
       "extensions": [
         "github.copilot",
         "ms-vscode.vscode-typescript-next",
-        "ms-dotnettools.csharp"
+        "ms-dotnettools.csharp",
+        "svipas.prettier-plus"
       ]
     }
   }

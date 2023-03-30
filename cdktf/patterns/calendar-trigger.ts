@@ -29,8 +29,9 @@ export class CalendarTriggerPattern extends Construct {
             project: props.cloudFunctionDeploymentConstruct.project,
         });
 
-        this.cloudFunctionConstruct = await CloudFunctionConstruct.createCloudFunctionConstruct(this, "cloud-function", {
+        this.cloudFunctionConstruct = await CloudFunctionConstruct.create(this, "cloud-function", {
             functionName: "google-calendar-poller" + props.suffix,
+            runtime: "nodejs16",
             entryPoint: "google-calendar-poller",
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
             environmentVariables: {

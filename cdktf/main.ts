@@ -7,6 +7,7 @@ import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
 import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
 import { PubSubCloudFunctionSubscriberPattern } from "./patterns/pubsub-cloudfunction-subscriber";
+import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
 dotenv.config();
 
 class GcpLabEngineStack extends TerraformStack {
@@ -41,12 +42,19 @@ class GcpLabEngineStack extends TerraformStack {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       suffix: ""
     });
- 
+
     await PubSubCloudFunctionSubscriberPattern.create(this, "class-grader-pubsub-cloud-function-subscriber", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       functionName: "class-grader",
       eventTopic: calendarTriggerPattern.eventTopic,
       filter: `attributes.type="START"`,
+    });
+
+    await CloudFunctionConstruct.create(this, "grader-cloud-function", {
+      functionName: "grader",
+      entryPoint: "HelloWorld.Function",
+      runtime: "dotnet6",
+      cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
     });
   }
 }

@@ -11,6 +11,7 @@ import { CloudFunctionDeploymentConstruct } from "./cloud-function-deployment-co
 
 export interface CloudFunctionConstructProps {
     readonly functionName: string;
+    readonly runtime: string;
     readonly entryPoint?: string;
     readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
     readonly environmentVariables?: { [key: string]: string };
@@ -59,7 +60,7 @@ export class CloudFunctionConstruct extends Construct {
             project: this.props.cloudFunctionDeploymentConstruct.project,
             location: this.props.cloudFunctionDeploymentConstruct.region,
             buildConfig: {
-                runtime: "nodejs18",
+                runtime: props.runtime,
                 entryPoint: this.props.entryPoint ?? this.props.functionName,
                 source: {
                     storageSource: {
@@ -95,7 +96,7 @@ export class CloudFunctionConstruct extends Construct {
         });
     }
 
-    public static async createCloudFunctionConstruct(scope: Construct, id: string, props: CloudFunctionConstructProps) {
+    public static async create(scope: Construct, id: string, props: CloudFunctionConstructProps) {
         const me = new CloudFunctionConstruct(scope, id, props);
         await me.build(props);
         return me;
