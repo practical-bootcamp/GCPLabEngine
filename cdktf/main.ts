@@ -62,14 +62,9 @@ class GcpLabEngineStack extends TerraformStack {
         oidcToken: {
           serviceAccountEmail: cloudFunctionConstruct.serviceAccount.email
         }
-      },     
-      
+      }, 
+      filter: `attributes.type="START"`,          
     });
-
-
-
-
-
 
   }
 }

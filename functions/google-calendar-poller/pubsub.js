@@ -7,7 +7,7 @@ async function publishMessageWithAttributes(topic, event, eventType) {
             summery: event.summary,
             recurrence: "" + event.recurrence,
             location: event.location,
-            eventType
+            type: eventType
         }
     });
     console.log(`Message ${messageId} published.`);
