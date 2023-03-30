@@ -1,24 +1,29 @@
 import { Construct } from "constructs";
 
-import { StringResource } from "./../.gen/providers/random/string-resource";
-import { RandomProvider } from "./../.gen/providers/random/provider";
-import { StorageBucket } from "./../.gen/providers/google/storage-bucket";
+import { StringResource } from "../.gen/providers/random/string-resource";
+import { RandomProvider } from "../.gen/providers/random/provider";
+import { StorageBucket } from "../.gen/providers/google/storage-bucket";
 import { ProjectService } from "../.gen/providers/google/project-service";
+import { ArchiveProvider } from "../.gen/providers/archive/provider";
 
 
 export interface CloudFunctionDeploymentConstructProps {
-    readonly projectId: string;
+    readonly project: string;
+    readonly region: string;
 }
 
 export class CloudFunctionDeploymentConstruct extends Construct {
     public readonly sourceBucket: StorageBucket;
-    public readonly projectId: string;
+    public readonly project: string;
+    readonly region: string;
 
     constructor(scope: Construct, id: string, props: CloudFunctionDeploymentConstructProps) {
         super(scope, id);
+        new ArchiveProvider(this, "archive", {});
         new RandomProvider(this, "random", {});
 
-        this.projectId = props.projectId;
+        this.project = props.project;
+        this.region = props.region;
 
         const apis = [
             "iam.googleapis.com",
@@ -30,11 +35,12 @@ export class CloudFunctionDeploymentConstruct extends Construct {
             "storage-api.googleapis.com",
             "storage-component.googleapis.com",
             "cloudbuild.googleapis.com",
+            "eventarc.googleapis.com",
         ];
         const services = [];
         for (const api of apis) {
             services.push(new ProjectService(this, `${api.replaceAll(".", "")}`, {
-                project: props.projectId,
+                project: props.project,
                 service: api,
                 disableOnDestroy: false,
             }));
@@ -48,7 +54,9 @@ export class CloudFunctionDeploymentConstruct extends Construct {
 
         this.sourceBucket = new StorageBucket(this, "sourceBucket", {
             name: "source" + bucketSuffix.result,
-            location: "US",
+            project: props.project,
+            location: props.region,
+            storageClass: "REGIONAL",
             forceDestroy: true,
             uniformBucketLevelAccess: true,
             lifecycleRule: [{
