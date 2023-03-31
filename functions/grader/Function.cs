@@ -21,10 +21,11 @@ public class Function : IHttpFunction
         string where = ((string)request.Query["where"]) ?? "";
         using TextReader reader = new StreamReader(request.Body);
         string key = await reader.ReadToEndAsync();
-        Console.WriteLine(key);
+        // Console.WriteLine(key);
 
         var tempDir = Path.GetTempPath();
         var tempCredentialsFilePath = Path.Combine(tempDir, "credentials.json");
+        await File.WriteAllTextAsync(tempCredentialsFilePath, key);
         // tempCredentialsFilePath = "/workspaces/GCPLabEngine/functions/grader/key.json";
 
         var runTestParameters = new List<string>
