@@ -6,10 +6,12 @@ import { PubsubSubscription } from "../.gen/providers/google/pubsub-subscription
 
 
 export interface PubSubCloudFunctionSubscriberPatternProps {
+
     readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
     readonly functionName: string;
     readonly eventTopic: PubsubTopic;
     readonly filter?: string;
+    readonly environmentVariables?: { [key: string]: string; };
 }
 
 export class PubSubCloudFunctionSubscriberPattern extends Construct {
@@ -26,6 +28,7 @@ export class PubSubCloudFunctionSubscriberPattern extends Construct {
             functionName: props.functionName,
             runtime: "nodejs16",
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
+            environmentVariables: props.environmentVariables,
         });
 
         new PubsubSubscription(this, "subscription", {

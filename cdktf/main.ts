@@ -6,8 +6,8 @@ import { DataGoogleBillingAccount } from "./.gen/providers/google/data-google-bi
 import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
 import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
-import { PubSubCloudFunctionSubscriberPattern } from "./patterns/pubsub-cloudfunction-subscriber";
-import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
+import { ClassGrader } from "./business-logics/class-grader";
+
 dotenv.config();
 
 class GcpLabEngineStack extends TerraformStack {
@@ -44,21 +44,11 @@ class GcpLabEngineStack extends TerraformStack {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       suffix: ""
     });
-
-    await PubSubCloudFunctionSubscriberPattern.create(this, "class-grader-pubsub-cloud-function-subscriber", {
+    await ClassGrader.create(this, "class-grader", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
-      functionName: "class-grader",
-      eventTopic: calendarTriggerPattern.eventTopic,
-      filter: `attributes.type="START"`,
+      calendarTriggerPattern: calendarTriggerPattern,
     });
 
-    await CloudFunctionConstruct.create(this, "grader-cloud-function", {
-      functionName: "grader",
-      entryPoint: "Grader.Function",
-      runtime: "dotnet6",
-      cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
-      makePublic: true,
-    });
   }
 }
 
