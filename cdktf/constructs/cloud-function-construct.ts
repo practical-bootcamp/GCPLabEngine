@@ -18,6 +18,7 @@ export interface CloudFunctionConstructProps {
     readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
     readonly environmentVariables?: { [key: string]: string };
     readonly eventTrigger?: Cloudfunctions2FunctionEventTrigger;
+    readonly makePublic?: boolean;
 }
 
 export class CloudFunctionConstruct extends Construct {
@@ -40,8 +41,8 @@ export class CloudFunctionConstruct extends Construct {
     private async build(props: CloudFunctionConstructProps) {
 
         const options = {
-            folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
-            files: { include: ['*.js', '*.json'] },
+            folders: { exclude: ['.*', 'node_modules', 'test_coverage', "bin", "obj"] },
+            files: { include: ['*.js', '*.json', '*.cs', ".csproject"] },
         };
         const hash = await hashElement(path.resolve(__dirname, "..", "..", "functions", this.props.functionName), options);
         const outputFileName = `function-source-${hash.hash}.zip`;
@@ -81,12 +82,13 @@ export class CloudFunctionConstruct extends Construct {
             eventTrigger: props.eventTrigger,
         });
 
+        const member = props.makePublic ?? false ? "allUsers" : "serviceAccount:" + this.serviceAccount.email;
         new Cloudfunctions2FunctionIamBinding(this, "cloudfunctions2-function-iam-member", {
             project: this.cloudFunction.project,
             location: this.cloudFunction.location,
             cloudFunction: this.cloudFunction.name,
             role: "roles/cloudfunctions.invoker",
-            members: ["serviceAccount:" + this.serviceAccount.email]
+            members: [member]
         });
 
         new CloudRunServiceIamBinding(this, "cloud-run-service-iam-binding", {
@@ -94,7 +96,7 @@ export class CloudFunctionConstruct extends Construct {
             location: this.cloudFunction.location,
             service: this.cloudFunction.name,
             role: "roles/run.invoker",
-            members: ["serviceAccount:" + this.serviceAccount.email]
+            members: [member]
         });
     }
 

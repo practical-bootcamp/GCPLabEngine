@@ -32,11 +32,13 @@ class GcpLabEngineStack extends TerraformStack {
       skipDelete: false
     });
 
-
     const cloudFunctionDeploymentConstruct = new CloudFunctionDeploymentConstruct(this, "cloud-function-deployment", {
       project: project.projectId,
       region: process.env.REGION!,
     });
+
+    //For the first deployment, it takes a while for API to be enabled.
+    // await new Promise(r => setTimeout(r, 30000));
 
     const calendarTriggerPattern = await CalendarTriggerPattern.create(this, "calendar-trigger", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
@@ -52,9 +54,10 @@ class GcpLabEngineStack extends TerraformStack {
 
     await CloudFunctionConstruct.create(this, "grader-cloud-function", {
       functionName: "grader",
-      entryPoint: "HelloWorld.Function",
+      entryPoint: "Grader.Function",
       runtime: "dotnet6",
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
+      makePublic: true,
     });
   }
 }
