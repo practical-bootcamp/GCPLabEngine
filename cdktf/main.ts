@@ -1,5 +1,5 @@
 import { Construct } from "constructs";
-import { App, TerraformStack } from "cdktf";
+import { App, TerraformOutput, TerraformStack } from "cdktf";
 import { GoogleProvider } from "./.gen/providers/google/provider/index";
 import { Project } from "./.gen/providers/google/project";
 import { DataGoogleBillingAccount } from "./.gen/providers/google/data-google-billing-account";
@@ -7,6 +7,7 @@ import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
 import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
 import { ClassGrader } from "./business-logics/class-grader";
+import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
 
 dotenv.config();
 
@@ -49,6 +50,16 @@ class GcpLabEngineStack extends TerraformStack {
       calendarTriggerPattern: calendarTriggerPattern,
     });
 
+    const cloudFunctionConstruct = await CloudFunctionConstruct.create(this, "cloud-function", {
+      functionName: "registration",
+      runtime: "nodejs16",
+      cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
+      makePublic: true,
+    });
+    
+    new TerraformOutput(this, "registration-url", {
+      value: cloudFunctionConstruct.cloudFunction.serviceConfig.uri,
+    });
   }
 }
 

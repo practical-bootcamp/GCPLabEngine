@@ -84,7 +84,7 @@ export class CloudFunctionConstruct extends Construct {
 
         const member = props.makePublic ?? false ? "allUsers" : "serviceAccount:" + this.serviceAccount.email;
         new Cloudfunctions2FunctionIamBinding(this, "cloudfunctions2-function-iam-member", {
-            project: this.cloudFunction.project,
+            project: this.cloudFunction.project,            
             location: this.cloudFunction.location,
             cloudFunction: this.cloudFunction.name,
             role: "roles/cloudfunctions.invoker",

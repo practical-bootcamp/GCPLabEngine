@@ -37,6 +37,7 @@ export class CloudFunctionDeploymentConstruct extends Construct {
             "storage-component.googleapis.com",
             "cloudbuild.googleapis.com",
             "eventarc.googleapis.com",
+            "secretmanager.googleapis.com",
         ];
         const services = [];
         for (const api of apis) {
