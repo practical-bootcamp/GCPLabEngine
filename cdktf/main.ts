@@ -9,6 +9,8 @@ import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
 import { ClassGrader } from "./business-logics/class-grader";
 
 import { CourseRegistration } from "./business-logics/course-registration";
+import { ArchiveProvider } from "./.gen/providers/archive/provider";
+import { RandomProvider } from "./.gen/providers/random/provider";
 
 dotenv.config();
 
@@ -22,6 +24,9 @@ class GcpLabEngineStack extends TerraformStack {
     new GoogleProvider(this, "google", {
       // userProjectOverride: true,
     });
+
+    const archiveProvider = new ArchiveProvider(this, "archive", {});
+    const randomProvider = new RandomProvider(this, "random", {});
 
     const billingAccount = new DataGoogleBillingAccount(this, "billing-account", {
       billingAccount: process.env.BillING_ACCOUNT!,
@@ -37,6 +42,8 @@ class GcpLabEngineStack extends TerraformStack {
     const cloudFunctionDeploymentConstruct = new CloudFunctionDeploymentConstruct(this, "cloud-function-deployment", {
       project: project.projectId,
       region: process.env.REGION!,
+      archiveProvider: archiveProvider,
+      randomProvider: randomProvider,
     });
 
     //For the first deployment, it takes a while for API to be enabled.
@@ -49,6 +56,7 @@ class GcpLabEngineStack extends TerraformStack {
     await ClassGrader.create(this, "class-grader", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       calendarTriggerPattern: calendarTriggerPattern,
+      randomProvider: randomProvider,
     });
 
     const courseRegistration = await CourseRegistration.create(this, "course-registration", {

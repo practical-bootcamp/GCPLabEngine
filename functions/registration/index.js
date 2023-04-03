@@ -9,13 +9,9 @@ functions.http('registration', async (req, res) => {
         return;
     } else if (req.method === 'POST') {
         const data = req.body;
-        console.log(data);
-        console.log(data.spakey);
-        console.log(typeof data.spakey);
         const spakey = JSON.parse(data.spakey);
         spakey.email = data.email;
-        spakey.course = data.course;
-        spakey.private_key = { "stringValue": data.private_key, "excludeFromIndexes": true };
+        spakey.course = data.course;        
         await saveKey(spakey);
         res.status(200).send("Your key has been saved!");
         return;

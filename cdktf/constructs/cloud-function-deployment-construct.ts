@@ -11,6 +11,8 @@ import { AppEngineApplication } from "../.gen/providers/google/app-engine-applic
 export interface CloudFunctionDeploymentConstructProps {
     readonly project: string;
     readonly region: string;
+    readonly randomProvider: RandomProvider;
+    readonly archiveProvider: ArchiveProvider;
 }
 
 export class CloudFunctionDeploymentConstruct extends Construct {
@@ -20,9 +22,8 @@ export class CloudFunctionDeploymentConstruct extends Construct {
 
     constructor(scope: Construct, id: string, props: CloudFunctionDeploymentConstructProps) {
         super(scope, id);
-        new ArchiveProvider(this, "archive", {});
-        new RandomProvider(this, "random", {});
-
+        
+        
         this.project = props.project;
         this.region = props.region;
 
