@@ -1,13 +1,13 @@
 import { Construct } from "constructs";
-import { StorageBucketObject } from "../.gen/providers/google/storage-bucket-object";
-import { ServiceAccount } from "../.gen/providers/google/service-account";
+import { hashElement } from 'folder-hash';
+import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
+import { CloudRunServiceIamBinding } from "../.gen/providers/google/cloud-run-service-iam-binding";
 import { Cloudfunctions2Function, Cloudfunctions2FunctionEventTrigger } from "../.gen/providers/google/cloudfunctions2-function";
 import { Cloudfunctions2FunctionIamBinding } from "../.gen/providers/google/cloudfunctions2-function-iam-binding";
-import { CloudRunServiceIamBinding } from "../.gen/providers/google/cloud-run-service-iam-binding";
-import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
-import path = require("path");
-import { hashElement } from 'folder-hash';
+import { ServiceAccount } from "../.gen/providers/google/service-account";
+import { StorageBucketObject } from "../.gen/providers/google/storage-bucket-object";
 import { CloudFunctionDeploymentConstruct } from "./cloud-function-deployment-construct";
+import path = require("path");
 
 export interface CloudFunctionConstructProps {
     readonly functionName: string;

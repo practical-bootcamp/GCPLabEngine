@@ -1,8 +1,8 @@
 import { Construct } from "constructs";
+import { PubsubSubscription } from "../.gen/providers/google/pubsub-subscription";
+import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
 import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
 import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
-import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
-import { PubsubSubscription } from "../.gen/providers/google/pubsub-subscription";
 
 
 export interface PubSubCloudFunctionSubscriberPatternProps {

@@ -21,10 +21,8 @@ class GcpLabEngineStack extends TerraformStack {
 
   async buildGcpLabEngineStack() {
     const projectId = process.env.PROJECTID!;
-    new GoogleProvider(this, "google", {
-      // userProjectOverride: true,
-    });
-
+    const suffix = process.env.SUFFIX ?? "";
+    new GoogleProvider(this, "google", {});
     const archiveProvider = new ArchiveProvider(this, "archive", {});
     const randomProvider = new RandomProvider(this, "random", {});
 
@@ -49,6 +47,11 @@ class GcpLabEngineStack extends TerraformStack {
     //For the first deployment, it takes a while for API to be enabled.
     // await new Promise(r => setTimeout(r, 30000));
 
+    const courseRegistration = await CourseRegistration.create(this, "course-registration", {
+      cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
+      suffix
+    });
+
     const calendarTriggerPattern = await CalendarTriggerPattern.create(this, "calendar-trigger", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       suffix: ""
@@ -57,10 +60,7 @@ class GcpLabEngineStack extends TerraformStack {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       calendarTriggerPattern: calendarTriggerPattern,
       randomProvider: randomProvider,
-    });
-
-    const courseRegistration = await CourseRegistration.create(this, "course-registration", {
-      cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
+      suffix
     });
 
     new TerraformOutput(this, "registration-url", {

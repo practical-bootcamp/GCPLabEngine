@@ -77,7 +77,7 @@ function getComingEvents(icalUrl) {
   
               console.log('Recurrence start:', start)
               const diff = diff_minutes(todayEventStart, now);
-              if (diff > 0 && diff < 15) {
+              if (diff >= 0 && diff < 15) {
                 comingEvents.push({
                   start: new Date(todayEventStart),
                   end: new Date(todayEventEnd),

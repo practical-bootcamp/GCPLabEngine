@@ -1,20 +1,20 @@
 import { Construct } from "constructs";
-import { PubSubCloudFunctionSubscriberPattern } from "../patterns/pubsub-cloudfunction-subscriber";
+import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
+import { StorageBucket } from "../.gen/providers/google/storage-bucket";
+import { StorageBucketIamMember } from "../.gen/providers/google/storage-bucket-iam-member";
+import { RandomProvider } from "../.gen/providers/random/provider";
+import { StringResource } from "../.gen/providers/random/string-resource";
+import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
 import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
 import { CalendarTriggerPattern } from "../patterns/calendar-trigger";
-import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
-import { StorageBucket } from "../.gen/providers/google/storage-bucket";
-import { StringResource } from "../.gen/providers/random/string-resource";
-import { RandomProvider } from "../.gen/providers/random/provider";
-import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
-import { StorageBucketIamMember } from "../.gen/providers/google/storage-bucket-iam-member";
-
+import { PubSubCloudFunctionSubscriberPattern } from "../patterns/pubsub-cloudfunction-subscriber";
 
 
 export interface ClassGraderProps {
     readonly calendarTriggerPattern: CalendarTriggerPattern;
     readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
     readonly randomProvider: RandomProvider;
+    readonly suffix: string;
 }
 
 export class ClassGrader extends Construct {
@@ -48,6 +48,9 @@ export class ClassGrader extends Construct {
             runtime: "dotnet6",
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
             makePublic: true,
+            environmentVariables: {
+                "SUFFIX": props.suffix,
+            }
         });
 
         const pubSubCloudFunctionSubscriberPattern = await PubSubCloudFunctionSubscriberPattern.create(this, "class-grader-pubsub-cloud-function-subscriber", {

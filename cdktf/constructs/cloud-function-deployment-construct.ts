@@ -1,11 +1,11 @@
 import { Construct } from "constructs";
 
-import { StringResource } from "../.gen/providers/random/string-resource";
-import { RandomProvider } from "../.gen/providers/random/provider";
-import { StorageBucket } from "../.gen/providers/google/storage-bucket";
-import { ProjectService } from "../.gen/providers/google/project-service";
 import { ArchiveProvider } from "../.gen/providers/archive/provider";
 import { AppEngineApplication } from "../.gen/providers/google/app-engine-application";
+import { ProjectService } from "../.gen/providers/google/project-service";
+import { StorageBucket } from "../.gen/providers/google/storage-bucket";
+import { RandomProvider } from "../.gen/providers/random/provider";
+import { StringResource } from "../.gen/providers/random/string-resource";
 
 
 export interface CloudFunctionDeploymentConstructProps {

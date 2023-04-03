@@ -1,10 +1,11 @@
 import { Construct } from "constructs";
-import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
 import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
+import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
 import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
 
 export interface CourseRegistrationProps {
-    cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
+    readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
+    readonly suffix: string;
 }
 
 export class CourseRegistration extends Construct {
@@ -20,6 +21,9 @@ export class CourseRegistration extends Construct {
             runtime: "nodejs16",
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
             makePublic: true,
+            environmentVariables: {
+                "SUFFIX": props.suffix,
+            }
         });
 
         new ProjectIamMember(this, "DatastoreProjectIamMember", {
