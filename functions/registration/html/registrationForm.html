@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+        integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <h1>Registration</h1>
+    <form action="." method="post">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" readonly>
+        <br />
+        <label for="course">Course</label>
+        <input type="text" name="course" id="course" readonly>
+        <br />
+        <label for="spakey">GCP Project Service Account Key JSON</label>
+        <br />
+        <textarea type="text" name="spakey" id="spakey" required cols="30" rows="20"></textarea>
+        <br />
+        <input type="submit" value="Register">
+    </form>
+    <script>
+        $(document).ready(function () {
+            var urlParams = new URLSearchParams(window.location.search);
+            var email = urlParams.get('email');
+            var course = urlParams.get('course');
+            $('#email').val(email);
+            $('#course').val(course);
+        });
+    </script>
+</body>
+
+</html>

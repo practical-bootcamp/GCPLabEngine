@@ -7,7 +7,8 @@ import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
 import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
 import { ClassGrader } from "./business-logics/class-grader";
-import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
+
+import { CourseRegistration } from "./business-logics/course-registration";
 
 dotenv.config();
 
@@ -50,19 +51,15 @@ class GcpLabEngineStack extends TerraformStack {
       calendarTriggerPattern: calendarTriggerPattern,
     });
 
-    const cloudFunctionConstruct = await CloudFunctionConstruct.create(this, "cloud-function", {
-      functionName: "registration",
-      runtime: "nodejs16",
+    const courseRegistration = await CourseRegistration.create(this, "course-registration", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
-      makePublic: true,
     });
-    
+
     new TerraformOutput(this, "registration-url", {
-      value: cloudFunctionConstruct.cloudFunction.serviceConfig.uri,
+      value: courseRegistration.registrationUrl,
     });
   }
 }
-
 
 async function buildStack(scope: Construct, id: string) {
   const stack = new GcpLabEngineStack(scope, id);
