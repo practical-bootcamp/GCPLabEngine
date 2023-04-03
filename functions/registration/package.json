@@ -1,15 +1,16 @@
 {
-  "name": "class-grader",
+  "name": "registration",
   "version": "1.0.0",
-  "description": "Handle start grading event",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.1.3",
-    "@google-cloud/pubsub": "^3.4.1"
+    "@google-cloud/datastore": "^7.4.0",
+    "@google-cloud/functions-framework": "^3.1.3"
   }
 }

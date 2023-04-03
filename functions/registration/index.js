@@ -1,0 +1,27 @@
+const functions = require('@google-cloud/functions-framework');
+const fs = require('fs');
+const path = require('path');
+const { saveKey } = require('./datastore');
+
+functions.http('registration', async (req, res) => {
+    if (req.method === 'GET') {
+        res.status(200).send(fs.readFileSync(path.join(__dirname, "html", "registrationForm.html"), 'utf8'));
+        return;
+    } else if (req.method === 'POST') {
+        const data = req.body;
+        console.log(data);
+        console.log(data.spakey);
+        console.log(typeof data.spakey);
+        const spakey = JSON.parse(data.spakey);
+        spakey.email = data.email;
+        spakey.course = data.course;
+        spakey.private_key = { "stringValue": data.private_key, "excludeFromIndexes": true };
+        await saveKey(spakey);
+        res.status(200).send("Your key has been saved!");
+        return;
+    } else {
+        res.status(405).send("Method not allowed");
+        return;
+    }
+
+});

@@ -6,9 +6,11 @@ functions.cloudEvent('class-grader', cloudEvent => {
     // The Pub/Sub message is passed as the CloudEvent's data payload.
     const base64name = cloudEvent.data.message.data;
 
+
     const name = base64name
         ? Buffer.from(base64name, 'base64').toString()
         : 'World';
 
     console.log(`Hello, ${name}!`);
+    console.log(cloudEvent.data.message.attributes);
 });

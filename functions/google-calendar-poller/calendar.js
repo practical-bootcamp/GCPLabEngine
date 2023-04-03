@@ -95,9 +95,9 @@ function getComingEvents(icalUrl) {
     });
   }
 
-  async function getEvents(icalUrl) {
+  async function getNewEvents(icalUrl) {
     const comingRecurrences = await getComingRecurrences(icalUrl);
     const ComingEvents = await getComingEvents(icalUrl);
     return [...ComingEvents, ...comingRecurrences];
   }
-  module.exports = { getEvents };
+  module.exports = { getNewEvents };

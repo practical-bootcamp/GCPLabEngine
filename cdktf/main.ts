@@ -1,14 +1,15 @@
 import { Construct } from "constructs";
-import { App, TerraformStack } from "cdktf";
+import { App, TerraformOutput, TerraformStack } from "cdktf";
 import { GoogleProvider } from "./.gen/providers/google/provider/index";
 import { Project } from "./.gen/providers/google/project";
 import { DataGoogleBillingAccount } from "./.gen/providers/google/data-google-billing-account";
 import * as dotenv from 'dotenv';
 import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
-
 import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
-import { CloudFunctionConstruct } from "./constructs/cloud-function-construct";
-// import { ProjectService } from "./.gen/providers/google/project-service";
+import { ClassGrader } from "./business-logics/class-grader";
+
+import { CourseRegistration } from "./business-logics/course-registration";
+
 dotenv.config();
 
 class GcpLabEngineStack extends TerraformStack {
@@ -33,31 +34,32 @@ class GcpLabEngineStack extends TerraformStack {
       skipDelete: false
     });
 
-
     const cloudFunctionDeploymentConstruct = new CloudFunctionDeploymentConstruct(this, "cloud-function-deployment", {
       project: project.projectId,
       region: process.env.REGION!,
     });
 
-    const calendarTriggerPattern = await CalendarTriggerPattern.createCalendarTriggerPattern(this, "calendar-trigger", {
+    //For the first deployment, it takes a while for API to be enabled.
+    // await new Promise(r => setTimeout(r, 30000));
+
+    const calendarTriggerPattern = await CalendarTriggerPattern.create(this, "calendar-trigger", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       suffix: ""
     });
-
-    await CloudFunctionConstruct.createCloudFunctionConstruct(this, "cloud-function", {
-      functionName: "class-grader",
+    await ClassGrader.create(this, "class-grader", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
-      eventTrigger:
-      {
-        eventType: "google.cloud.pubsub.topic.v1.messagePublished",
-        pubsubTopic: calendarTriggerPattern.startEventTopic.id,       
-      },
+      calendarTriggerPattern: calendarTriggerPattern,
     });
 
+    const courseRegistration = await CourseRegistration.create(this, "course-registration", {
+      cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
+    });
 
+    new TerraformOutput(this, "registration-url", {
+      value: courseRegistration.registrationUrl,
+    });
   }
 }
-
 
 async function buildStack(scope: Construct, id: string) {
   const stack = new GcpLabEngineStack(scope, id);

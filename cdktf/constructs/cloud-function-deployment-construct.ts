@@ -5,6 +5,7 @@ import { RandomProvider } from "../.gen/providers/random/provider";
 import { StorageBucket } from "../.gen/providers/google/storage-bucket";
 import { ProjectService } from "../.gen/providers/google/project-service";
 import { ArchiveProvider } from "../.gen/providers/archive/provider";
+import { AppEngineApplication } from "../.gen/providers/google/app-engine-application";
 
 
 export interface CloudFunctionDeploymentConstructProps {
@@ -36,6 +37,7 @@ export class CloudFunctionDeploymentConstruct extends Construct {
             "storage-component.googleapis.com",
             "cloudbuild.googleapis.com",
             "eventarc.googleapis.com",
+            "secretmanager.googleapis.com",
         ];
         const services = [];
         for (const api of apis) {
@@ -67,6 +69,15 @@ export class CloudFunctionDeploymentConstruct extends Construct {
                     age: 1
                 }
             }],
+            dependsOn: services
+        });
+
+        // This is a hack to enable datastore API for the project
+        // https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/datastore_index
+        new AppEngineApplication(this, "app-engine-application", {
+            locationId: props.region,
+            project: props.project,
+            databaseType: "CLOUD_DATASTORE_COMPATIBILITY",
             dependsOn: services
         });
     }
