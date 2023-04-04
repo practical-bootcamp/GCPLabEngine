@@ -20,6 +20,8 @@ export interface ClassGraderProps {
 export class ClassGrader extends Construct {
     props: ClassGraderProps;
     public testResultBucket!: StorageBucket;
+    public gameTaskUrl!: string;
+    public graderUrl!: string;
 
     private constructor(scope: Construct, id: string, props: ClassGraderProps) {
         super(scope, id);
@@ -52,6 +54,17 @@ export class ClassGrader extends Construct {
                 "SUFFIX": props.suffix,
             }
         });
+        this.graderUrl = graderCloudFunctionConstruct.cloudFunction.serviceConfig.uri;
+
+        const gameTaskCloudFunctionConstruct = await CloudFunctionConstruct.create(this, "game-task-cloud-function", {
+            functionName: "gameTask",
+            functionCode: "grader",
+            entryPoint: "Grader.GameTask",
+            runtime: "dotnet6",
+            cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
+            makePublic: true,
+        });
+        this.gameTaskUrl = gameTaskCloudFunctionConstruct.cloudFunction.serviceConfig.uri;
 
         const pubSubCloudFunctionSubscriberPattern = await PubSubCloudFunctionSubscriberPattern.create(this, "class-grader-pubsub-cloud-function-subscriber", {
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,

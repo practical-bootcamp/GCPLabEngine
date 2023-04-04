@@ -56,13 +56,20 @@ class GcpLabEngineStack extends TerraformStack {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       suffix: ""
     });
-    await ClassGrader.create(this, "class-grader", {
+
+    const classGrader = await ClassGrader.create(this, "class-grader", {
       cloudFunctionDeploymentConstruct: cloudFunctionDeploymentConstruct,
       calendarTriggerPattern: calendarTriggerPattern,
       randomProvider: randomProvider,
       suffix
     });
 
+    new TerraformOutput(this, "gameTaskUrl", {
+      value: classGrader.gameTaskUrl,
+    });
+    new TerraformOutput(this, "graderUrl", {
+      value: classGrader.graderUrl,
+    });
     new TerraformOutput(this, "registration-url", {
       value: courseRegistration.registrationUrl,
     });

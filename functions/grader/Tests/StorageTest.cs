@@ -15,7 +15,7 @@ internal class StorageTest
     private StorageClient client;
 
     [SetUp]
-    public async Task Setup()
+    public void Setup()
     {
         this.config = new Config();
         this.client = StorageClient.Create(this.config.Credential);
