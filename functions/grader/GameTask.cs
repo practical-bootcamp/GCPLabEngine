@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Linq;
 using Grader.Helper;
+using System.Net;
 
 namespace Grader;
 
@@ -19,6 +20,19 @@ public class GameTask : IHttpFunction
 {
     public async Task HandleAsync(HttpContext context)
     {
+        HttpRequest request = context.Request;
+        HttpResponse response = context.Response;
+
+        response.Headers.Append("Access-Control-Allow-Origin", "*");
+        if (HttpMethods.IsOptions(request.Method))
+        {
+            response.Headers.Append("Access-Control-Allow-Methods", "GET");
+            response.Headers.Append("Access-Control-Allow-Headers", "Content-Type");
+            response.Headers.Append("Access-Control-Max-Age", "3600");
+            response.StatusCode = (int)HttpStatusCode.NoContent;
+            return;
+        }
+
         static IEnumerable<Type> GetTypesWithHelpAttribute(Assembly assembly)
         {
             return from Type type in assembly!.GetTypes()
