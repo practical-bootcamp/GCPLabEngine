@@ -29,5 +29,3 @@ export const dialogs = {
     "message": "Welcome to the game, and now I help you getting back your earned coins before working on new tasks, but it takes sometimes!",
   }]
 };
-
-export const tasks = [{ "gameClassOrder": 1, "name": "Grader.Tests.StorageTest.Test01_HaveStorageAccount", "tests": ["Grader.Tests.StorageTest.Test01_HaveStorageAccount"], "instruction": "", "filter": "test==\"Grader.Tests.StorageTest.Test01_HaveStorageAccount\"", "timeLimit": 2, "reward": 10 }];

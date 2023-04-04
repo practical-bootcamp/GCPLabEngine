@@ -37,28 +37,32 @@ export default class MainMenuScene extends Scene {
                     let servicePrincipal = prompt("Please input your GCP Services Account json:", "");
                     try {
                         servicePrincipal = JSON.parse(servicePrincipal);
-                        
                     }
                     catch (e) {
                         window.location.reload();
                         break;
                     }
-
-                    this.scene.start('GameScene', {
-                        heroStatus: {
-                            position: { x: 4, y: 3 },
-                            previousPosition: { x: 4, y: 3 },
-                            frame: 'hero_idle_down_01',
-                            facingDirection: 'down',
-                            health: 60,
-                            maxHealth: 60,
-                            coin: 0,
-                            canPush: false,
-                            haveSword: false,
-                        },
-                        mapKey: 'home_page_city_house_01',
-                        servicePrincipal
-                    });
+                    fetch(tasksUrl, {
+                        method: 'GET'
+                    }).then(res => res.json()).then(
+                        tasks => {
+                            this.scene.start('GameScene', {
+                                heroStatus: {
+                                    position: { x: 4, y: 3 },
+                                    previousPosition: { x: 4, y: 3 },
+                                    frame: 'hero_idle_down_01',
+                                    facingDirection: 'down',
+                                    health: 60,
+                                    maxHealth: 60,
+                                    coin: 0,
+                                    canPush: false,
+                                    haveSword: false,
+                                },
+                                mapKey: 'home_page_city_house_01',
+                                servicePrincipal,
+                                tasks
+                            });
+                        });
                     break;
                 }
 

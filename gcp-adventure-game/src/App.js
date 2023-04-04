@@ -15,7 +15,7 @@ import HeroCoin from "./game/HeroCoin";
 import HeroHealth from "./game/HeroHealth";
 import './App.css';
 import { calculateGameSize } from "./game/utils";
-import { dialogs, tasks, gradingEngineBaseUrl } from "./game/tasks";
+import { dialogs, gradingEngineBaseUrl } from "./game/tasks";
 
 const { width, height, multiplier } = calculateGameSize();
 
@@ -165,7 +165,7 @@ function App() {
             taskNumber++;
           }
           else {
-            for (let t of tasks) {
+            for (let t of detail.tasks) {
               const passAllRequiredTestsForATask = t.tests.map(c => data[c] === 1).every(element => element === true);
               if (passAllRequiredTestsForATask) {
                 console.log("Passed: " + t.name);
@@ -207,7 +207,7 @@ function App() {
       }
       let taskMessages = [...dialogs[detail.characterName]];
 
-      if (taskNumber >= tasks.length) {
+      if (taskNumber >= detail.tasks.length) {
         taskMessages.push({ "message": "Sorry we don't have any task for you!" });
         setCharacterName(detail.characterName);
         setMessages(
@@ -215,7 +215,7 @@ function App() {
         );
         return;
       }
-      const task = tasks[taskNumber];
+      const task = detail.tasks[taskNumber];
       checkTasks(heroSprite, detail, task);
 
       taskMessages.push({ "message": `Task ${taskNumber}: ` + task.instruction + `(You have ${task.timeLimit} minutes and you can get ${task.reward} coins!)` });

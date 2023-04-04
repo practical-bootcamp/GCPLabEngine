@@ -8,7 +8,7 @@ import {
     NPC_MOVEMENT_RANDOM,
     SCENE_FADE_TIME,
 }
-from '../constants';
+    from '../constants';
 
 export default class GameScene extends Scene {
     constructor() {
@@ -309,31 +309,31 @@ export default class GameScene extends Scene {
             case 'up':
                 return {
                     x: position.x * 16,
-                        y: (position.y - 2) * 16,
+                    y: (position.y - 2) * 16,
                 };
 
             case 'right':
                 return {
                     x: (position.x + 2) * 16,
-                        y: position.y * 16,
+                    y: position.y * 16,
                 };
 
             case 'down':
                 return {
                     x: position.x * 16,
-                        y: (position.y + 2) * 16,
+                    y: (position.y + 2) * 16,
                 };
 
             case 'left':
                 return {
                     x: (position.x - 2) * 16,
-                        y: position.y * 16,
+                    y: position.y * 16,
                 };
 
             default:
                 return {
                     x: position.x * 16,
-                        y: position.y * 16,
+                    y: position.y * 16,
                 };
         }
     }
@@ -342,8 +342,9 @@ export default class GameScene extends Scene {
         const camera = this.cameras.main;
         const { game } = this.sys;
         const isDebugMode = this.physics.config.debug;
-        const { heroStatus, mapKey, servicePrincipal } = this.initData;
+        const { heroStatus, mapKey, servicePrincipal, tasks } = this.initData;
         this.data.set('servicePrincipal', servicePrincipal);
+        this.data.set('tasks', tasks);
 
         const {
             position: initialPosition,
@@ -531,10 +532,12 @@ export default class GameScene extends Scene {
                             if (Input.Keyboard.JustDown(this.enterKey)) {
                                 const characterName = value;
                                 const servicePrincipal = this.data.values.servicePrincipal;
+                                const tasks = this.data.values.tasks;
                                 const customEvent = new CustomEvent('new-dialog', {
                                     detail: {
                                         characterName,
                                         servicePrincipal,
+                                        tasks,
                                         heroSprite: this.heroSprite,
                                     },
                                 });
@@ -720,7 +723,8 @@ export default class GameScene extends Scene {
                                             haveSword: this.heroSprite.haveSword,
                                         },
                                         mapKey: teleportToMapKey,
-                                        servicePrincipal
+                                        servicePrincipal,
+                                        tasks,
                                     });
                                 }
                             );
@@ -764,7 +768,7 @@ export default class GameScene extends Scene {
                 sprite: this.heroSprite,
                 startPosition: initialPosition,
                 offsetY: 4,
-            }, ],
+            },],
         };
 
         this.physics.add.overlap(this.heroSprite, this.itemsSprites, (objA, objB) => {
@@ -790,10 +794,12 @@ export default class GameScene extends Scene {
 
             if (item.itemType === 'sword') {
                 const servicePrincipal = this.data.values.servicePrincipal;
+                const tasks = this.data.values.tasks;
                 const customEvent = new CustomEvent('new-dialog', {
                     detail: {
                         characterName: item.itemType,
                         servicePrincipal,
+                        tasks,
                         heroSprite: this.heroSprite,
                     },
                 });
@@ -821,10 +827,13 @@ export default class GameScene extends Scene {
 
             if (item.itemType === 'push') {
                 const servicePrincipal = this.data.values.servicePrincipal;
+                const tasks = this.data.values.tasks;
+
                 const customEvent = new CustomEvent('new-dialog', {
                     detail: {
                         characterName: item.itemType,
                         servicePrincipal,
+                        tasks,
                         heroSprite: this.heroSprite,
                     },
                 });
@@ -1209,10 +1218,12 @@ export default class GameScene extends Scene {
                 const characterName = npc.texture.key;
 
                 const servicePrincipal = this.data.values.servicePrincipal;
+                const tasks = this.data.values.tasks;
                 const customEvent = new CustomEvent('new-dialog', {
                     detail: {
                         characterName,
                         servicePrincipal,
+                        tasks,
                         heroSprite: this.heroSprite,
                     },
                 });
