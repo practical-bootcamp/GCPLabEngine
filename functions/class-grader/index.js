@@ -42,7 +42,7 @@ functions.cloudEvent('class-grader', async cloudEvent => {
     async function getTestResult(student) {
         // console.log(student);
         try {
-            const url = process.env.GRADER_FUNCTION_URL + "?trace=" + student.email; // URL to send the request to
+            const url = process.env.GRADER_FUNCTION_URL + "?xml=true&trace=" + student.email; // URL to send the request to
             const key = { ...student };
             delete key.email;
             delete key.course;
