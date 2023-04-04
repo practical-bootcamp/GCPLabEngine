@@ -32,6 +32,15 @@ npm run build
 ```
 
 And, you can deploy the reactjs website to GCP Bucket Storage Static Website
+```
+https://storage.googleapis.com/<yourbucket>/
+nvm install 16
+nvm use 16
+npm i
+npm run build
+gsutil rsync -a public-read -r build/ gs://<yourbucket>
+```
+
 
 
 ## Phaser 3 + React 17 Top-Down game demo

@@ -11,6 +11,7 @@ import { ClassGrader } from "./business-logics/class-grader";
 import { CourseRegistration } from "./business-logics/course-registration";
 import { ArchiveProvider } from "./.gen/providers/archive/provider";
 import { RandomProvider } from "./.gen/providers/random/provider";
+import { StaticSitePattern } from "./patterns/static-site";
 
 dotenv.config();
 
@@ -64,6 +65,8 @@ class GcpLabEngineStack extends TerraformStack {
       suffix
     });
 
+
+
     new TerraformOutput(this, "gameTaskUrl", {
       value: classGrader.gameTaskUrl,
     });
@@ -73,6 +76,19 @@ class GcpLabEngineStack extends TerraformStack {
     new TerraformOutput(this, "registration-url", {
       value: courseRegistration.registrationUrl,
     });
+
+    const staticSitePattern = new StaticSitePattern(this, "static-site", {
+      project: project.projectId,
+      region: process.env.REGION!,
+      randomProvider: randomProvider,
+    });
+    new TerraformOutput(this, "static-site-url", {
+      value: "https://storage.googleapis.com/" + staticSitePattern.siteBucket.name,
+    });
+    new TerraformOutput(this, "static-site-bucket", {
+      value: staticSitePattern.siteBucket.name,
+    });
+
   }
 }
 
