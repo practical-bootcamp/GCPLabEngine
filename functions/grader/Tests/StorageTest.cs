@@ -20,7 +20,7 @@ internal class StorageTest
         this.config = new Config();
         this.client = StorageClient.Create(this.config.Credential);
     }
-    [Test, GameTask(1)]
+    [Test, GameTask("Create a storage bucket with the name ending in -ivestudent", 3, 10)]
     public void Test01_HaveStorageAccount()
     {
         var buckets = this.client.ListBuckets(config.ProjectId);

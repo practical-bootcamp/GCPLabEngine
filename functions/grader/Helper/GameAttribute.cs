@@ -5,8 +5,8 @@ namespace Grader.Helper;
 [AttributeUsage(AttributeTargets.Method)]
 public class GameTaskAttribute : Attribute
 {
-    //Default 2 minutes, 10 points, no group.
-    public GameTaskAttribute(int groupNumber) : this("", 2, 10, groupNumber)
+    //Group is no mark.
+    public GameTaskAttribute(int groupNumber) : this("", 0, 0, groupNumber)
     {
     }
 

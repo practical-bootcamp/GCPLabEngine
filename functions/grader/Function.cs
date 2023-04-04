@@ -84,7 +84,7 @@ public class Function : IHttpFunction
 
     private static Dictionary<string, int> ParseNUnitTestResult(XmlDocument xmlDoc)
     {
-        var testCases = xmlDoc.SelectNodes("//*[@type=\"TestFixture\"]");
+        var testCases = xmlDoc.SelectNodes("//test-case");
         var result = new Dictionary<string, int>();
         foreach (XmlNode node in testCases)
         {
