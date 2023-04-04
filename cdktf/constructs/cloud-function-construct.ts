@@ -1,16 +1,17 @@
 import { Construct } from "constructs";
-import { StorageBucketObject } from "../.gen/providers/google/storage-bucket-object";
-import { ServiceAccount } from "../.gen/providers/google/service-account";
+import { hashElement } from 'folder-hash';
+import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
+import { CloudRunServiceIamBinding } from "../.gen/providers/google/cloud-run-service-iam-binding";
 import { Cloudfunctions2Function, Cloudfunctions2FunctionEventTrigger } from "../.gen/providers/google/cloudfunctions2-function";
 import { Cloudfunctions2FunctionIamBinding } from "../.gen/providers/google/cloudfunctions2-function-iam-binding";
-import { CloudRunServiceIamBinding } from "../.gen/providers/google/cloud-run-service-iam-binding";
-import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
-import path = require("path");
-import { hashElement } from 'folder-hash';
+import { ServiceAccount } from "../.gen/providers/google/service-account";
+import { StorageBucketObject } from "../.gen/providers/google/storage-bucket-object";
 import { CloudFunctionDeploymentConstruct } from "./cloud-function-deployment-construct";
+import path = require("path");
 
 export interface CloudFunctionConstructProps {
     readonly functionName: string;
+    readonly functionCode?: string;
     readonly runtime: string;
     readonly entryPoint?: string;
     readonly availableMemory?: string;
@@ -29,10 +30,12 @@ export class CloudFunctionConstruct extends Construct {
 
     private constructor(scope: Construct, id: string, props: CloudFunctionConstructProps) {
         super(scope, id);
+        let accountId = props.functionName + props.entryPoint?.replace(/[^a-z0-9]/gi, '');
+        accountId = accountId.substring(0, 27).toLowerCase();
         this.serviceAccount = new ServiceAccount(this, "service-account", {
-            accountId: props.functionName,
+            accountId: accountId,
             project: props.cloudFunctionDeploymentConstruct.project,
-            displayName: props.functionName,
+            displayName: props.functionName + props.entryPoint ?? "",
         });
         this.props = props;
         this.project = props.cloudFunctionDeploymentConstruct.project;
@@ -44,11 +47,11 @@ export class CloudFunctionConstruct extends Construct {
             folders: { exclude: ['.*', 'node_modules', 'test_coverage', "bin", "obj"] },
             files: { include: ['*.js', '*.json', '*.cs', ".csproject"] },
         };
-        const hash = await hashElement(path.resolve(__dirname, "..", "..", "functions", this.props.functionName), options);
+        const hash = await hashElement(path.resolve(__dirname, "..", "..", "functions", this.props.functionCode ?? this.props.functionName), options);
         const outputFileName = `function-source-${hash.hash}.zip`;
         const code = new DataArchiveFile(this, "archiveFile", {
             type: "zip",
-            sourceDir: path.resolve(__dirname, "..", "..", "functions", this.props.functionName),
+            sourceDir: path.resolve(__dirname, "..", "..", "functions", this.props.functionCode ?? this.props.functionName),
             outputPath: path.resolve(__dirname, "..", "cdktf.out", "functions", outputFileName)
         });
 
@@ -58,8 +61,9 @@ export class CloudFunctionConstruct extends Construct {
             source: code.outputPath,
         });
 
+
         this.cloudFunction = new Cloudfunctions2Function(this, "cloud-function", {
-            name: this.props.functionName,
+            name: this.props.functionName.toLowerCase(),
             project: this.props.cloudFunctionDeploymentConstruct.project,
             location: this.props.cloudFunctionDeploymentConstruct.region,
             buildConfig: {
@@ -84,7 +88,7 @@ export class CloudFunctionConstruct extends Construct {
 
         const member = props.makePublic ?? false ? "allUsers" : "serviceAccount:" + this.serviceAccount.email;
         new Cloudfunctions2FunctionIamBinding(this, "cloudfunctions2-function-iam-member", {
-            project: this.cloudFunction.project,            
+            project: this.cloudFunction.project,
             location: this.cloudFunction.location,
             cloudFunction: this.cloudFunction.name,
             role: "roles/cloudfunctions.invoker",

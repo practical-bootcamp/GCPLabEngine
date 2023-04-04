@@ -1,8 +1,8 @@
 import { Construct } from "constructs";
+import { PubsubSubscription } from "../.gen/providers/google/pubsub-subscription";
+import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
 import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
 import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
-import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
-import { PubsubSubscription } from "../.gen/providers/google/pubsub-subscription";
 
 
 export interface PubSubCloudFunctionSubscriberPatternProps {
@@ -15,7 +15,7 @@ export interface PubSubCloudFunctionSubscriberPatternProps {
 }
 
 export class PubSubCloudFunctionSubscriberPattern extends Construct {
-    cloudFunctionConstruct!: CloudFunctionConstruct;
+    public cloudFunctionConstruct!: CloudFunctionConstruct;
     props: PubSubCloudFunctionSubscriberPatternProps;
 
     private constructor(scope: Construct, id: string, props: PubSubCloudFunctionSubscriberPatternProps) {
@@ -24,7 +24,7 @@ export class PubSubCloudFunctionSubscriberPattern extends Construct {
     }
 
     private async build(props: PubSubCloudFunctionSubscriberPatternProps) {
-        const cloudFunctionConstruct = await CloudFunctionConstruct.create(this, "cloud-function", {
+        this.cloudFunctionConstruct = await CloudFunctionConstruct.create(this, "cloud-function", {
             functionName: props.functionName,
             runtime: "nodejs16",
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
@@ -35,14 +35,12 @@ export class PubSubCloudFunctionSubscriberPattern extends Construct {
             name: props.functionName + "-subscription",
             topic: props.eventTopic.name,
             project: props.cloudFunctionDeploymentConstruct.project,
-            ackDeadlineSeconds: 20,
-            retainAckedMessages: true,
-            messageRetentionDuration: "1200s",
+            ackDeadlineSeconds: 120,
             pushConfig:
             {
-                pushEndpoint: cloudFunctionConstruct.cloudFunction.serviceConfig.uri,
+                pushEndpoint: this.cloudFunctionConstruct.cloudFunction.serviceConfig.uri,
                 oidcToken: {
-                    serviceAccountEmail: cloudFunctionConstruct.serviceAccount.email
+                    serviceAccountEmail: this.cloudFunctionConstruct.serviceAccount.email
                 }
             },
             filter: props.filter,

@@ -5,6 +5,7 @@ namespace Grader.Helper;
 [AttributeUsage(AttributeTargets.Method)]
 public class GameTaskAttribute : Attribute
 {
+    //Group is no mark.
     public GameTaskAttribute(int groupNumber) : this("", 0, 0, groupNumber)
     {
     }

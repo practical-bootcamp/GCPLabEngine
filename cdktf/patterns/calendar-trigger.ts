@@ -1,10 +1,10 @@
+import { TerraformOutput } from "cdktf";
 import { Construct } from "constructs";
+import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
+import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
 import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
 import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
 import { CloudSchedulerConstruct } from "../constructs/cloud-scheduler-construct";
-import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
-import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
-import { TerraformOutput } from "cdktf";
 
 
 export interface CalendarTriggerPatternProps {
@@ -31,8 +31,7 @@ export class CalendarTriggerPattern extends Construct {
 
         this.cloudFunctionConstruct = await CloudFunctionConstruct.create(this, "cloud-function", {
             functionName: "google-calendar-poller" + props.suffix,
-            runtime: "nodejs16",
-            entryPoint: "google-calendar-poller",
+            runtime: "nodejs16",           
             cloudFunctionDeploymentConstruct: props.cloudFunctionDeploymentConstruct,
             environmentVariables: {
                 "ICALURL": process.env.ICALURL!,

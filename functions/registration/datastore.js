@@ -14,6 +14,7 @@ async function saveKey(studentKey) {
     const task = {
         key: key,
         data: studentKey,
+        excludeFromIndexes: ['private_key']
     };
     // Saves the entity
     await datastore.save(task);

@@ -36,12 +36,12 @@ functions.http('google-calendar-poller', async (req, res) => {
 //       continue;
 //     }
 //     await saveEvent(event);
-//     await publishMessageWithAttributes(START_EVENT_TOPIC_ID, event);
+//     await publishMessageWithAttributes(EVENT_TOPIC_ID, event, "START");
 //   }
 //   const justEndEvents = await getJustEndEvents();
 //   console.log(justEndEvents);
 //   for (const event of justEndEvents) {
-//     await publishMessageWithAttributes(END_EVENT_TOPIC_ID, event);
+//     await publishMessageWithAttributes(EVENT_TOPIC_ID, event, "END");
 //     await deleteEvent(event);
 //   }
 // })();
