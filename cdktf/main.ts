@@ -4,7 +4,7 @@ import { GoogleProvider } from "./.gen/providers/google/provider/index";
 import { Project } from "./.gen/providers/google/project";
 import { DataGoogleBillingAccount } from "./.gen/providers/google/data-google-billing-account";
 import * as dotenv from 'dotenv';
-import { CloudFunctionDeploymentConstruct } from "./constructs/cloud-function-deployment-construct";
+import { CloudFunctionDeploymentConstruct } from "./components/cloud-function-deployment-construct";
 import { CalendarTriggerPattern } from "./patterns/calendar-trigger";
 import { ClassGrader } from "./business-logics/class-grader";
 

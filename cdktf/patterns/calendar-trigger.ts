@@ -2,9 +2,9 @@ import { TerraformOutput } from "cdktf";
 import { Construct } from "constructs";
 import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
 import { PubsubTopic } from "../.gen/providers/google/pubsub-topic";
-import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
-import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
-import { CloudSchedulerConstruct } from "../constructs/cloud-scheduler-construct";
+import { CloudFunctionConstruct } from "../components/cloud-function-construct";
+import { CloudFunctionDeploymentConstruct } from "../components/cloud-function-deployment-construct";
+import { CloudSchedulerConstruct } from "../components/cloud-scheduler-construct";
 
 
 export interface CalendarTriggerPatternProps {
