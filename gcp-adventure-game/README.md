@@ -33,10 +33,10 @@ npm run build
 
 And, you can deploy the reactjs website to GCP Bucket Storage Static Website
 ```
-https://storage.googleapis.com/<yourbucket>/
 nvm install 16
 nvm use 16
 npm i
+export PUBLIC_URL=https://storage.googleapis.com/<yourbucket>/
 npm run build
 gsutil rsync -a public-read -r build/ gs://<yourbucket>
 ```
