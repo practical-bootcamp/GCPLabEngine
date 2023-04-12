@@ -4,8 +4,8 @@ import { StorageBucket } from "../.gen/providers/google/storage-bucket";
 import { StorageBucketIamMember } from "../.gen/providers/google/storage-bucket-iam-member";
 import { RandomProvider } from "../.gen/providers/random/provider";
 import { StringResource } from "../.gen/providers/random/string-resource";
-import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
-import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
+import { CloudFunctionConstruct } from "../components/cloud-function-construct";
+import { CloudFunctionDeploymentConstruct } from "../components/cloud-function-deployment-construct";
 import { CalendarTriggerPattern } from "../patterns/calendar-trigger";
 import { PubSubCloudFunctionSubscriberPattern } from "../patterns/pubsub-cloudfunction-subscriber";
 

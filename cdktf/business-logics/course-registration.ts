@@ -1,7 +1,7 @@
 import { Construct } from "constructs";
 import { ProjectIamMember } from "../.gen/providers/google/project-iam-member";
-import { CloudFunctionConstruct } from "../constructs/cloud-function-construct";
-import { CloudFunctionDeploymentConstruct } from "../constructs/cloud-function-deployment-construct";
+import { CloudFunctionConstruct } from "../components/cloud-function-construct";
+import { CloudFunctionDeploymentConstruct } from "../components/cloud-function-deployment-construct";
 
 export interface CourseRegistrationProps {
     readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
