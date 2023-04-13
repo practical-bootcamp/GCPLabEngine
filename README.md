@@ -6,6 +6,7 @@ When it comes to teaching GCP in a classroom setting, one of the biggest hurdles
 ![Design overview](images/design.png)
 
 ![GCP Adventure Game](images/gcp-adventure-game.jpg)
+![GCP Adventure Game NPC](images/gcp-adventure-game-npc.jpg)
 
 ## Deployment
 Fork this repository and create a Codespace.
@@ -28,12 +29,17 @@ npm install --global cdktf-cli@latest
 cd cdktf
 cdktf deploy --auto-approve
 ```
-Note down the static-site-bucket output.
-
+Note down the static-site-bucket, gameTaskUrl, and graderUrl output.
 
 ### To build the GCP Adventure Game Application
-The application only support node 16 and you need to set the static-site-bucket.
 
+1. Update gcp-adventure-game/src/game/tasks.js
+```
+export const gradingEngineBaseUrl = "<graderUrl>";
+export const tasksUrl = "<gameTaskUrl>";
+```
+
+2. The application only support node 16 and you need to set the static-site-bucket.
 ```
 export STATICSITEBUCKET=<static-site-bucket>
 nvm install 16
