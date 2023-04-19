@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" name="Grader.dll" fullname="/layers/google.dotnet.publish/publish/bin/Grader.dll" testcasecount="1" result="Passed" start-time="2023-04-04T06:52:47.8503501Z" end-time="2023-04-04T06:52:50.1522837Z" duration="2.301933" total="1" passed="1" failed="0" inconclusive="0" skipped="0" warnings="0" asserts="1" random-seed="1492445889">
+  <command-line><![CDATA[/layers/google.dotnet.publish/publish/bin/Grader.dll]]></command-line>
+  <filter>
+    <test>Grader.Tests</test>
+  </filter>
+  <test-suite type="Assembly" id="1007" name="Grader.dll" fullname="/layers/google.dotnet.publish/publish/bin/Grader.dll" runstate="Runnable" testcasecount="1" result="Passed" start-time="2023-04-04T06:52:47.8503501Z" end-time="2023-04-04T06:52:50.1522837Z" duration="2.301933" total="1" passed="1" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="1">
+    <environment framework-version="3.13.3.0" clr-version="6.0.15" os-version="Linux 4.4.0 #1 SMP Sun Jan 10 15:06:54 PST 2016" platform="Unix" cwd="/layers/google.dotnet.publish/publish/bin" machine-name="localhost" user="www-data" user-domain="localhost" culture="en-US" uiculture="en-US" os-architecture="x64" />
+    <settings>
+      <setting name="LOAD" value="System.Collections.Generic.List`1[System.String]" />
+      <setting name="WorkDirectory" value="/tmp/" />
+      <setting name="TestParametersDictionary" value="[CredentialsPath, /tmp/credentials.json], [trace, Anonymous]">
+        <item key="CredentialsPath" value="/tmp/credentials.json" />
+        <item key="trace" value="Anonymous" />
+      </setting>
+      <setting name="NumberOfTestWorkers" value="2" />
+    </settings>
+    <properties>
+      <property name="_PID" value="1" />
+      <property name="_APPDOMAIN" value="Grader" />
+    </properties>
+    <test-suite type="TestSuite" id="1008" name="Grader" fullname="Grader" runstate="Runnable" testcasecount="1" result="Passed" start-time="2023-04-04T06:52:47.8504844Z" end-time="2023-04-04T06:52:50.1522738Z" duration="2.301790" total="1" passed="1" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="1">
+      <test-suite type="TestSuite" id="1009" name="Tests" fullname="Grader.Tests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2023-04-04T06:52:47.8505450Z" end-time="2023-04-04T06:52:50.1522656Z" duration="2.301720" total="1" passed="1" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="1">
+        <test-suite type="TestFixture" id="1005" name="StorageTest" fullname="Grader.Tests.StorageTest" classname="Grader.Tests.StorageTest" runstate="Runnable" testcasecount="1" result="Passed" start-time="2023-04-04T06:52:47.8506270Z" end-time="2023-04-04T06:52:50.1522490Z" duration="2.301622" total="1" passed="1" failed="0" warnings="0" inconclusive="0" skipped="0" asserts="1">
+          <properties>
+            <property name="Timeout" value="90000" />
+          </properties>
+          <test-case id="1006" name="Test01_HaveStorageAccount" fullname="Grader.Tests.StorageTest.Test01_HaveStorageAccount" methodname="Test01_HaveStorageAccount" classname="Grader.Tests.StorageTest" runstate="Runnable" seed="1092790915" result="Passed" start-time="2023-04-04T06:52:47.8507845Z" end-time="2023-04-04T06:52:50.1521418Z" duration="2.301358" asserts="1">
+            <output><![CDATA[Anonymous
+]]></output>
+          </test-case>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

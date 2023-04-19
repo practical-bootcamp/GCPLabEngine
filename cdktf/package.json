@@ -22,6 +22,7 @@
   "dependencies": {
     "cdktf": "^0.15.5",
     "constructs": "^10.1.289",
+    "dotenv": "^16.0.3",
     "folder-hash": "^4.0.4"
   },
   "devDependencies": {

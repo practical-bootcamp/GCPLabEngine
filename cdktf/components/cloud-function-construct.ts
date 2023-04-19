@@ -1,103 +1,112 @@
 import { Construct } from "constructs";
-
-import { StringResource } from "./../.gen/providers/random/string-resource";
-import { RandomProvider } from "./../.gen/providers/random/provider";
-import { StorageBucket } from "./../.gen/providers/google/storage-bucket";
-import { StorageBucketObject } from "./../.gen/providers/google/storage-bucket-object";
-import { ProjectService } from "./../.gen/providers/google/project-service/index";
-import { Cloudfunctions2Function } from "../.gen/providers/google/cloudfunctions2-function";
-import { ArchiveProvider } from "../.gen/providers/archive/provider";
-import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
-import path = require("path");
 import { hashElement } from 'folder-hash';
-import { TerraformOutput } from "cdktf";
+import { DataArchiveFile } from "../.gen/providers/archive/data-archive-file";
+import { CloudRunServiceIamBinding } from "../.gen/providers/google/cloud-run-service-iam-binding";
+import { Cloudfunctions2Function, Cloudfunctions2FunctionEventTrigger } from "../.gen/providers/google/cloudfunctions2-function";
+import { Cloudfunctions2FunctionIamBinding } from "../.gen/providers/google/cloudfunctions2-function-iam-binding";
+import { ServiceAccount } from "../.gen/providers/google/service-account";
+import { StorageBucketObject } from "../.gen/providers/google/storage-bucket-object";
+import { CloudFunctionDeploymentConstruct } from "./cloud-function-deployment-construct";
+import path = require("path");
 
 export interface CloudFunctionConstructProps {
-    readonly projectId: string;
+    readonly functionName: string;
+    readonly functionCode?: string;
+    readonly runtime: string;
+    readonly entryPoint?: string;
+    readonly availableMemory?: string;
+    readonly timeout?: number;
+    readonly cloudFunctionDeploymentConstruct: CloudFunctionDeploymentConstruct;
+    readonly environmentVariables?: { [key: string]: string };
+    readonly eventTrigger?: Cloudfunctions2FunctionEventTrigger;
+    readonly makePublic?: boolean;
 }
 
 export class CloudFunctionConstruct extends Construct {
+    public cloudFunction!: Cloudfunctions2Function;
+    public serviceAccount: ServiceAccount;
+    private props: CloudFunctionConstructProps;
+    public project: string;
 
-    constructor(scope: Construct, id: string) {
+    private constructor(scope: Construct, id: string, props: CloudFunctionConstructProps) {
         super(scope, id);
+        let accountId = props.functionName + props.entryPoint?.replace(/[^a-z0-9]/gi, '');
+        accountId = accountId.substring(0, 27).toLowerCase();
+        this.serviceAccount = new ServiceAccount(this, "service-account", {
+            accountId: accountId,
+            project: props.cloudFunctionDeploymentConstruct.project,
+            displayName: props.functionName + props.entryPoint ?? "",
+        });
+        this.props = props;
+        this.project = props.cloudFunctionDeploymentConstruct.project;
     }
 
-    public async build(props: CloudFunctionConstructProps) {
-
-        new ArchiveProvider(this, "archive", {});
-        new RandomProvider(this, "random", {});
-
-        const bucketSuffix = new StringResource(this, "bucketPrefix", {
-            length: 8,
-            special: false,
-            upper: false,
-        })
-
-        const sourceBucket = new StorageBucket(this, "sourceBucket", {
-            name: "source" + bucketSuffix.result,
-            location: "US",
-            forceDestroy: true,
-            uniformBucketLevelAccess: true,
-        });
+    private async build(props: CloudFunctionConstructProps) {
 
         const options = {
-            folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
-            files: { include: ['*.js', '*.json'] },
+            folders: { exclude: ['.*', 'node_modules', 'test_coverage', "bin", "obj"] },
+            files: { include: ['*.js', '*.json', '*.cs', ".csproject"] },
         };
-        const hash = await hashElement(path.resolve(__dirname, "function", "google-calendar-poller"), options);
+        const hash = await hashElement(path.resolve(__dirname, "..", "..", "functions", this.props.functionCode ?? this.props.functionName), options);
+        const outputFileName = `function-source-${hash.hash}.zip`;
         const code = new DataArchiveFile(this, "archiveFile", {
             type: "zip",
-            sourceDir: path.resolve(__dirname, "function", "google-calendar-poller"),
-            outputPath: path.resolve(__dirname, "..", "cdktf.out", `function-source-${hash}.zip`)
-        })
-
+            sourceDir: path.resolve(__dirname, "..", "..", "functions", this.props.functionCode ?? this.props.functionName),
+            outputPath: path.resolve(__dirname, "..", "cdktf.out", "functions", outputFileName)
+        });
 
         const storageBucketObject = new StorageBucketObject(this, "storage-bucket-object", {
-            name: "function-source.zip",
-            bucket: sourceBucket.name,
+            name: outputFileName,
+            bucket: this.props.cloudFunctionDeploymentConstruct.sourceBucket.name,
             source: code.outputPath,
         });
 
-        const apis = [
-            "run.googleapis.com",
-            "artifactregistry.googleapis.com",
-            "cloudfunctions.googleapis.com",
-            "storage-api.googleapis.com",
-            "storage-component.googleapis.com",
-            "cloudbuild.googleapis.com",
-            "calendar-json.googleapis.com"];
-        const services = [];
-        for (const api of apis) {
-            services.push(new ProjectService(this, `${api.replaceAll(".", "")}`, {
-                project: props.projectId,
-                service: api,
-                disableOnDestroy: false,
-            }));
-        }
 
-        const cloudFunction = new Cloudfunctions2Function(this, "cloud-function", {
-            name: "google-calendar-poller",
-            description: "Polls Google Calendar for events and publishes them to a Pub/Sub topic",
-            location: "us-central1",
+        this.cloudFunction = new Cloudfunctions2Function(this, "cloud-function", {
+            name: this.props.functionName.toLowerCase(),
+            project: this.props.cloudFunctionDeploymentConstruct.project,
+            location: this.props.cloudFunctionDeploymentConstruct.region,
             buildConfig: {
-                runtime: "nodejs18",
-                entryPoint: "helloHttp",
+                runtime: props.runtime,
+                entryPoint: this.props.entryPoint ?? this.props.functionName,
                 source: {
                     storageSource: {
-                        bucket: sourceBucket.name,
+                        bucket: this.props.cloudFunctionDeploymentConstruct.sourceBucket.name,
                         object: storageBucketObject.name,
                     }
                 }
             },
             serviceConfig: {
                 maxInstanceCount: 1,
-                availableMemory: "128Mi",
-                timeoutSeconds: 60,
-            }
-            , dependsOn: services
+                availableMemory: props.availableMemory ?? "128Mi",
+                timeoutSeconds: props.timeout ?? 60,
+                serviceAccountEmail: this.serviceAccount.email,
+                environmentVariables: props.environmentVariables ?? {},
+            },
+            eventTrigger: props.eventTrigger,
         });
-        new TerraformOutput(this, "cloud-function-url", {
-            value: cloudFunction.serviceConfig.uri
-        })
+
+        const member = props.makePublic ?? false ? "allUsers" : "serviceAccount:" + this.serviceAccount.email;
+        new Cloudfunctions2FunctionIamBinding(this, "cloudfunctions2-function-iam-member", {
+            project: this.cloudFunction.project,
+            location: this.cloudFunction.location,
+            cloudFunction: this.cloudFunction.name,
+            role: "roles/cloudfunctions.invoker",
+            members: [member]
+        });
+
+        new CloudRunServiceIamBinding(this, "cloud-run-service-iam-binding", {
+            project: this.props.cloudFunctionDeploymentConstruct.project,
+            location: this.cloudFunction.location,
+            service: this.cloudFunction.name,
+            role: "roles/run.invoker",
+            members: [member]
+        });
+    }
+
+    public static async create(scope: Construct, id: string, props: CloudFunctionConstructProps) {
+        const me = new CloudFunctionConstruct(scope, id, props);
+        await me.build(props);
+        return me;
     }
 }
