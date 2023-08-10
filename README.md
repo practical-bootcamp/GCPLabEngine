@@ -16,7 +16,6 @@ Set up your gcloud cli and set the default project.
 
 ```
 gcloud auth login --no-launch-browser
-gcloud config set project <PROJECT_ID>
 gcloud auth application-default login
 ```
 Install NVM
@@ -25,29 +24,17 @@ https://github.com/nvm-sh/nvm
 
 ### Deploy GCP resources
 ```
-npm install --global cdktf-cli@latest
-cd cdktf
-cdktf deploy --auto-approve
+./deploy.sh
 ```
-Note down the static-site-bucket, gameTaskUrl, and graderUrl output.
+It will export infrastructure.json.
 
 ### To build the GCP Adventure Game Application
 
-1. Update gcp-adventure-game/src/game/tasks.js
-```
-export const gradingEngineBaseUrl = "<graderUrl>";
-export const tasksUrl = "<gameTaskUrl>";
-```
+1. Install NVM https://github.com/nvm-sh/nvm#install--update-script
 
 2. The application only support node 16 and you need to set the static-site-bucket.
 ```
-export STATICSITEBUCKET=<static-site-bucket>
-nvm install 16
-nvm use 16
-npm i
-export PUBLIC_URL=https://storage.googleapis.com/$STATICSITEBUCKET/
-npm run build
-gsutil rsync -a public-read -r build/ gs://$STATICSITEBUCKET
+./deploy-game-site.sh 
 ```
 
 

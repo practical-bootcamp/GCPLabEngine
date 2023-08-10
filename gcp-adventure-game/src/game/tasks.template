@@ -1,5 +1,5 @@
-export const gradingEngineBaseUrl = "https://grader-pnu44naesa-ue.a.run.app";
-export const tasksUrl = "https://gametask-pnu44naesa-ue.a.run.app/";
+export const gradingEngineBaseUrl = "###gradingEngineBaseUrl###";
+export const tasksUrl = "###tasksUrl###/";
 
 export const dialogs = {
   "npc_01": [{
