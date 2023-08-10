@@ -15,3 +15,4 @@ export PUBLIC_URL=https://storage.googleapis.com/$STATICSITEBUCKET/
 npm i
 npm run build
 gsutil -m rsync -a public-read -r build/ gs://$STATICSITEBUCKET
+nvm use 18

@@ -4,9 +4,9 @@
   "projectId": "2a5784ef-1dbc-43c6-98cb-db5b4faaba43",
   "sendCrashReports": "true",
   "terraformProviders": [
-    "google@~>4.58.0",
-    "random@~>3.4.3",
-    "archive@~>2.3.0"
+    "google@~>4.77.0",
+    "random@~>3.5.1",
+    "archive@~>2.4.0"
   ],
   "terraformModules": [],
   "context": {

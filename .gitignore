@@ -1,2 +1,3 @@
 .env
 infrastructure.json
+gcp-adventure-game/src/game/tasks.js

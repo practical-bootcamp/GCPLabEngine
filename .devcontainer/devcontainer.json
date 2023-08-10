@@ -22,7 +22,8 @@
 				"github.copilot",
 				"ms-vscode.vscode-typescript-next",
 				"ms-dotnettools.csharp",
-				"svipas.prettier-plus"
+				"svipas.prettier-plus",
+				"googlecloudtools.cloudcode"
 			]
 		}
 	}
